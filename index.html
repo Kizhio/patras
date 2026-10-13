@@ -37,6 +37,9 @@ body{font-family:var(--font);color:var(--fg);background:linear-gradient(160deg,v
 h1,h2,h3{margin:0 0 8px;line-height:1.1}
 h1{font-size:2.2rem}
 .logo{font-size:3rem;text-align:center;text-shadow:0 4px 24px var(--accent)}
+.logoimg{display:block;width:120px;height:120px;margin:4px auto 10px;border-radius:28px;box-shadow:0 10px 40px -8px var(--accent)}
+.btn.mode{text-align:left;padding:14px 20px}
+.btn.mode small{display:block;font-weight:400;font-size:.85rem;opacity:.8;margin-top:2px}
 .tag{text-align:center;color:var(--muted);margin:0 0 20px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0;backdrop-filter:blur(8px)}
 .card h2{font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
@@ -172,10 +175,11 @@ function applyScores(scores,correct,rec,imi){correct.forEach(p=>scores[p]++);if(
 
 /* ---------- inicio ---------- */
 function home(){
- app.innerHTML=`<h1 class="logo">⏪ Patrás</h1><p class="tag">Graba. Dale la vuelta. Imita. Adivina.</p>
+ app.innerHTML=`<img class="logoimg" src="icon-192.png" alt=""><h1 class="logo">Patrás</h1><p class="tag">Graba. Dale la vuelta. Imita. Adivina.</p>
+ <button class="btn primary mode" id="local">📱 Un solo móvil<small>Todos juntos, os lo vais pasando de mano en mano</small></button>
+ <button class="btn alt mode" id="online">📱📱 Cada uno con su móvil<small>En la misma habitación o a distancia, con un código de sala</small></button>
  ${themePicker()}
- <div class="row"><button class="btn primary" id="local">📱 Un móvil</button><button class="btn alt" id="online">🌐 Online</button></div>
- <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un móvil:</b> os lo vais pasando. <b>Online:</b> cada uno en su móvil, con un código o un enlace de sala.</p></details>
+ <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un solo móvil:</b> os lo vais pasando. <b>Cada uno con su móvil:</b> uno crea la sala y los demás entran con el enlace o el código, estén donde estén.</p></details>
  <button class="btn" id="install" style="display:none">📲 Instalar la app</button><p class="hint" id="ios" style="display:none">📲 Para instalarla en iPhone: botón <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>.</p>
  <footer>Gratis y sin servidor · de 3 a 10 jugadores en un móvil, desde 2 online</footer>`;
  bindThemes(home);$('#local').onclick=localSetup;$('#online').onclick=()=>onlineHome();
@@ -188,7 +192,7 @@ const showInstall=()=>{const b=$('#install');if(!b||!installEvt||standalone())re
 addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;showInstall()});
 if('serviceWorker'in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js');
 function localSetup(){
- app.innerHTML=`<h1>📱 Un móvil</h1>
+ app.innerHTML=`<h1>📱 Un solo móvil</h1>
  <section class="card"><h2 id="pcount">👥 Jugadores</h2><div class="players" id="plist"></div><form class="add" id="padd"><input id="pname" placeholder="Nombre" maxlength="14" autocomplete="off"><button class="btn primary" style="width:auto;margin:0;padding:12px 18px">＋</button></form><p class="hint">Mínimo ${MIN} jugadores, máximo ${MAX}.</p></section>
  ${optsUI(OPTS)}
  <button class="btn primary" id="start">Jugar ▶</button><button class="link" id="back">← Volver</button>`;
@@ -255,7 +259,7 @@ const errScreen=m=>{sessionStorage.removeItem('room');app.innerHTML=`<p class="e
 function onlineHome(code=''){
  const saved=localStorage.getItem('me')||'';
  if(code&&saved)return joinRoom(saved,code);
- app.innerHTML=`<h1>🌐 Online</h1><p class="hint">Cada uno en su móvil, desde 2 jugadores. Uno crea la sala y comparte el enlace o el código.</p>
+ app.innerHTML=`<h1>📱📱 Cada uno con su móvil</h1><p class="hint">Desde 2 jugadores, juntos o a distancia. Uno crea la sala y comparte el enlace o el código.</p>
  <div class="card"><input id="me" placeholder="Tu nombre" maxlength="14" autocomplete="off" value="${esc(saved)}"></div>
  ${code?'':'<button class="btn primary" id="host">➕ Crear sala</button>'}
  <div class="card"><form class="add" id="joinf"><input id="code" placeholder="CÓDIGO" maxlength="4" autocomplete="off" value="${esc(code)}" style="text-transform:uppercase;letter-spacing:.2em"><button class="btn alt" style="width:auto;margin:0">Unirse</button></form></div>
