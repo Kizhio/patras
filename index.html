@@ -127,7 +127,7 @@ const bindThemes=re=>document.querySelectorAll('.theme').forEach(b=>b.onclick=()
 
 /* ---------- opciones (compartidas por ambos modos) ---------- */
 const optsUI=o=>`<section class="card"><h2>⚙️ Opciones</h2>
- <label class="opt">🔁 <select id="vueltas">${[1,2,3].map(n=>`<option value="${n}" ${n===o.vueltas?'selected':''}>${n} vuelta${n>1?'s':''} (cada uno graba ${n} vez${n>1?'es':''})</option>`).join('')}</select></label>
+ <label class="opt">🔁 <select id="vueltas">${[1,2,3].map(n=>`<option value="${n}" ${n===o.vueltas?'selected':''}>${n} vuelta${n>1?'s':''} (cada uno graba ${n>1?n+' veces':'1 vez'})</option>`).join('')}</select></label>
  <label class="opt">📚 <select id="cat"><option value="">Todas las frases</option>${Object.keys(PHRASES).map(c=>`<option ${c===o.cat?'selected':''}>${c}</option>`).join('')}</select></label>
  <label class="opt"><input type="checkbox" id="pistas" ${o.pistas?'checked':''}> <span>💡 Frases sugeridas <small>· desmarca para jugar <b>sin pistas</b>: cada uno inventa y escribe su frase en secreto</small></span></label></section>`;
 const bindOpts=o=>{$('#vueltas').onchange=e=>o.vueltas=+e.target.value;$('#cat').onchange=e=>o.cat=e.target.value;$('#pistas').onchange=e=>o.pistas=e.target.checked};

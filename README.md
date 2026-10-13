@@ -3,21 +3,21 @@
 Juego de fiesta tipo *Backtalk*: graba una frase, dale la vuelta, imítala y adivina.
 Un solo archivo HTML, sin servidor propio, sin cuentas, gratis.
 
-- **Un móvil:** os lo vais pasando de mano en mano.
-- **Online:** cada uno en su móvil. Uno crea la sala, comparte un código de 4 letras y los demás se unen. El audio viaja directo entre móviles por WebRTC (PeerJS, señalización pública gratuita).
+**Jugar:** https://kizhio.github.io/patras/
 
-- De 3 a 10 jugadores en un móvil, desde 2 online. Marcador con podio y confeti
-- 11 skins: Halloween, Navidad, Neón, Arcade, Océano, Espacio, Bosque, Kawaii, Playa, Fiesta, Pirata
+- **Un móvil:** os lo vais pasando de mano en mano (3 a 10 jugadores).
+- **Online:** cada uno en su móvil, desde 2 jugadores. Uno crea la sala y comparte el enlace o el código de 4 letras. El audio viaja directo entre móviles por WebRTC (PeerJS, señalización pública gratuita). Si un jugador pierde la conexión o recarga, vuelve a entrar solo.
+- Cuenta atrás 3-2-1 al grabar y tope de 5 segundos.
+- 5 categorías de frases (cotidianas, refranes, pelis y series, canciones, absurdas) o modo **sin pistas**: cada uno inventa su frase y la escribe en secreto.
+- Marcador con podio y confeti. 11 skins: Halloween, Navidad, Neón, Arcade, Océano, Espacio, Bosque, Kawaii, Playa, Fiesta, Pirata.
 
-## Publicar gratis en GitHub Pages
+## Publicar tu propia copia en GitHub Pages
 
-1. Crea un repositorio público en GitHub llamado `patras`.
-2. Sube `index.html` y este `README.md`.
-3. En el repo: **Settings → Pages → Branch: main / (root) → Save**.
-4. En un minuto estará en `https://TU_USUARIO.github.io/patras/`.
+1. Haz un fork o sube `index.html` a un repositorio público.
+2. **Settings → Pages → Branch: main / (root) → Save**.
+3. En un minuto estará en `https://TU_USUARIO.github.io/NOMBRE_DEL_REPO/`. El micrófono solo funciona por HTTPS, y GitHub Pages ya lo da.
 
-El micrófono solo funciona por HTTPS, y GitHub Pages ya lo da.
+## Añadir skins o frases
 
-## Añadir skins
-
-Copia una línea `[data-theme=...]` del `<style>` con tus colores y añade su entrada en `THEMES` (nombre + emojis flotantes). Nada más.
+Skins: copia una línea `[data-theme=...]` del `<style>` con tus colores y añade su entrada en `THEMES` (nombre + emojis flotantes).
+Frases: añade una categoría o más frases en `PHRASES`.
