@@ -539,15 +539,19 @@ function renderOnline(){
 /* ---------- chat de sala (texto y notas de voz; solo online, se reenvía por el anfitrión) ---------- */
 // ponytail: sin historial para quien entra tarde; el chat vive solo mientras dura la sala
 const CH={open:false,unread:0,list:[]};
-function addChat(m){if(!N)return;if(m.data)m.buf=fromPCM(m.data,m.rate);CH.list.push(m);if(CH.list.length>100)CH.list.shift();if(!CH.open&&m.from!==N.me)CH.unread++;renderChat();if(m.buf&&m.from!==N.me)playNote(m)}
-function playNote(m){const cv=document.querySelector(`[data-ts="${m.ts}"] canvas`)||document.createElement('canvas');play(m.buf,cv)}
+function addChat(m){if(!N)return;if(m.data)m.buf=fromPCM(m.data,m.rate);m.played=m.from===N.me;CH.list.push(m);if(CH.list.length>100)CH.list.shift();if(!CH.open&&m.from!==N.me)CH.unread++;renderChat();playPending()}
+function playNote(m){m.played=true;const cv=document.querySelector(`[data-ts="${m.ts}"] canvas`)||document.createElement('canvas');return play(m.buf,cv).then(renderChat)}
+// Las notas solo suenan si el audio está desbloqueado (hace falta un toque del usuario, sobre todo en iPhone); si no, quedan pendientes
+function playPending(){if(!N||!AC||AC.state!=='running'||playing)return;const m=CH.list.find(x=>x.buf&&!x.played);if(m)playNote(m).then(playPending)}
+document.addEventListener('pointerdown',()=>{if(N)ac().resume().then(playPending)},true);
 function renderChat(){
  const box=$('#chat');if(!N){box.hidden=true;document.body.classList.remove('chat');CH.list=[];CH.unread=0;CH.open=false;return}
  box.hidden=false;document.body.classList.add('chat');const n=$('#chatn');n.hidden=!CH.unread;n.textContent=CH.unread;
  $('#chatpanel').hidden=!CH.open;if(!CH.open)return;
- const L=$('#chatlist');L.innerHTML=CH.list.map(m=>`<div class="msg ${m.from===N.me?'me':''} ${m.buf?'vn':''}" data-ts="${m.ts}"><div><small>${esc(m.from)}</small>${m.buf?'':esc(m.text)}</div>${m.buf?`<button data-p="${m.ts}">▶</button><canvas></canvas><span>${m.buf.duration.toFixed(0)} s</span>`:''}</div>`).join('')||'<p class="hint">Aún no hay mensajes. ¡Di algo!</p>';
+ const L=$('#chatlist');L.innerHTML=CH.list.map(m=>`<div class="msg ${m.from===N.me?'me':''} ${m.buf?'vn':''}" data-ts="${m.ts}"><div><small>${esc(m.from)}</small>${m.buf?'':esc(m.text)}</div>${m.buf?`<button data-p="${m.ts}">▶</button><canvas></canvas><span>${m.played?m.buf.duration.toFixed(0)+' s':'🔊 toca para oír'}</span>`:''}</div>`).join('')||'<p class="hint">Aún no hay mensajes. ¡Di algo!</p>';
+ if(CH.list.some(m=>m.buf))L.insertAdjacentHTML('beforeend','<p class="hint" style="font-size:.78rem">¿No se oye? Sube el volumen multimedia y quita el modo silencio del móvil.</p>');
  CH.list.filter(m=>m.buf).forEach(m=>{const c=document.querySelector(`[data-ts="${m.ts}"] canvas`);if(c)drawWave(c,m.buf)});
- L.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const m=CH.list.find(x=>String(x.ts)===b.dataset.p);play(m.buf,b.nextElementSibling)});
+ L.querySelectorAll('[data-p]').forEach(b=>b.onclick=()=>{const m=CH.list.find(x=>String(x.ts)===b.dataset.p);m.played=true;ac();play(m.buf,b.nextElementSibling)});
  L.scrollTop=L.scrollHeight;
 }
 $('#chatbtn').onclick=()=>{CH.open=true;CH.unread=0;renderChat();$('#chattext').focus()};
