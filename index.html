@@ -71,8 +71,10 @@ h1{font-size:2.2rem;font-family:var(--hfont);text-shadow:0 2px 16px var(--accent
 [data-theme=arcade] h1{font-size:1.3rem;line-height:1.5}
 [data-theme=arcade] .logo{font-size:1.9rem}
 .logo{font-size:3.2rem;text-align:center;text-shadow:0 0 24px var(--accent),0 0 60px var(--accent)}
-.skinbtn{display:flex;align-items:center;gap:12px;text-align:left}
-.skinbtn>span:first-child{font-size:1.8rem}.skinbtn em{margin-left:auto;font-style:normal;color:var(--accent2);font-size:.95rem}
+.skinbtn .ic{filter:drop-shadow(0 0 10px var(--accent));background:linear-gradient(160deg,var(--accent),var(--bg2))}
+.skinbtn small{display:block;font-size:.72rem;text-transform:uppercase;letter-spacing:.12em;color:var(--muted);font-weight:700;margin-bottom:3px}
+.skinbtn b{display:block;font-size:1.3rem;font-family:var(--hfont);text-shadow:0 0 12px var(--accent);line-height:1.1}
+.skinbtn .pill{font-size:.9rem;opacity:1;background:var(--accent2);color:#000;border-radius:999px;padding:9px 14px;font-weight:800;box-shadow:0 4px 14px -4px var(--accent2)}
 .skins{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
 .skin{position:relative;border:3px solid transparent;border-radius:20px;padding:16px 10px 12px;min-height:150px;background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--fg);font:inherit;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;overflow:hidden;transition:transform .15s;box-shadow:0 10px 30px -12px #000}
 .skin:active{transform:scale(.96)}
@@ -85,8 +87,13 @@ h1{font-size:2.2rem;font-family:var(--hfont);text-shadow:0 2px 16px var(--accent
 .skin.on{border-color:var(--accent2);box-shadow:0 0 0 3px var(--accent),0 10px 30px -8px var(--accent);transform:scale(1.03)}
 .skin.on i{position:absolute;left:0;right:0;bottom:0;background:var(--accent2);color:#000;font-style:normal;font-weight:800;font-size:.8rem;padding:3px}
 .logoimg{display:block;width:min(240px,70vw);height:auto;margin:4px auto 10px;border-radius:22%;box-shadow:0 14px 50px -10px var(--accent),0 0 0 4px rgba(255,255,255,.08);animation:bob 7s ease-in-out infinite}
-.btn.mode{text-align:left;padding:14px 20px}
-.btn.mode small{display:block;font-weight:400;font-size:.85rem;opacity:.8;margin-top:2px}
+.ic{width:58px;height:58px;border-radius:18px;display:grid;place-items:center;font-size:1.9rem;background:rgba(0,0,0,.2);box-shadow:inset 0 0 0 2px rgba(255,255,255,.35),0 6px 16px -6px rgba(0,0,0,.6);flex:none}
+.btn.mode,.btn.skinbtn{display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:14px;text-align:left;padding:14px 16px;border-radius:26px;position:relative;overflow:hidden;margin:12px 0}
+.btn.mode::after{content:"";position:absolute;inset:0;background:linear-gradient(115deg,rgba(255,255,255,.28),transparent 35%,transparent 65%,rgba(255,255,255,.14));pointer-events:none}
+.btn.mode b{display:block;font-size:1.25rem;font-family:var(--hfont);letter-spacing:.02em;line-height:1.15}
+.btn.mode small{display:block;font-weight:500;font-size:.85rem;opacity:.85;margin-top:4px;line-height:1.3}
+.btn.mode .ch{font-size:1.7rem;opacity:.75;line-height:1}
+[data-theme=arcade] .btn.mode b,[data-theme=arcade] .skinbtn b{font-size:.8rem;line-height:1.5}
 .tag{text-align:center;color:var(--muted);margin:0 0 20px}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0;backdrop-filter:blur(8px);box-shadow:var(--cardshadow)}
 .card h2{font-size:1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
@@ -193,7 +200,7 @@ function setTheme(t,wow){
  if(wow&&old!==t){const w=$('#wipe');w.classList.remove('go');void w.offsetWidth;w.classList.add('go');w.onanimationend=()=>w.classList.remove('go')}
 }
 function confetti(){const e=THEMES[document.body.dataset.theme].e,c=$('#confetti');c.innerHTML='';for(let i=0;i<70;i++){const s=document.createElement('span');s.textContent=rand(e);s.style.left=Math.random()*100+'%';s.style.animationDelay=Math.random()*1.5+'s';s.style.fontSize=16+Math.random()*24+'px';c.appendChild(s)}setTimeout(()=>c.innerHTML='',5000)}
-const skinBtn=()=>{const T=THEMES[document.body.dataset.theme];return`<button class="btn skinbtn" id="skin"><span>${T.h}</span><span>🎨 Skin: <b>${T.n}</b></span><em>Cambiar ›</em></button>`};
+const skinBtn=()=>{const T=THEMES[document.body.dataset.theme];return`<button class="btn skinbtn" id="skin"><span class="ic">${T.h}</span><span><small>🎨 Skin actual</small><b>${T.n}</b></span><span class="pill">Cambiar</span></button>`};
 const bindSkin=back=>{$('#skin').onclick=()=>skinPicker(back)};
 function skinPicker(back){ // galería a pantalla completa; tocar una la aplica al momento
  const cur=document.body.dataset.theme;
@@ -244,8 +251,8 @@ function applyScores(scores,correct,rec,imi){correct.forEach(p=>scores[p]++);if(
 /* ---------- inicio ---------- */
 function home(){
  app.innerHTML=`<img class="logoimg" src="icon-512.png?v=2" alt="Patrás"><p class="tag">Graba. Dale la vuelta. Imita. Adivina.</p>
- <button class="btn primary mode" id="local">📱 Un solo móvil<small>Todos juntos, os lo vais pasando de mano en mano</small></button>
- <button class="btn alt mode" id="online">📱📱 Cada uno con su móvil<small>En la misma habitación o a distancia, con un código de sala</small></button>
+ <button class="btn primary mode" id="local"><span class="ic">📱</span><span><b>Un solo móvil</b><small>Todos juntos en la misma sala. El móvil va pasando de mano en mano: uno graba, otro imita, el resto adivina.</small></span><span class="ch">›</span></button>
+ <button class="btn alt mode" id="online"><span class="ic">📲</span><span><b>Cada uno con su móvil</b><small>Juntos o a distancia. Uno crea la sala y los demás entran con el enlace o el código. Desde 2 jugadores.</small></span><span class="ch">›</span></button>
  ${skinBtn()}
  <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un solo móvil:</b> os lo vais pasando. <b>Cada uno con su móvil:</b> uno crea la sala y los demás entran con el enlace o el código, estén donde estén.</p></details>
  <button class="btn" id="install" style="display:none">📲 Instalar la app</button><p class="hint" id="ios" style="display:none">📲 Para instalarla en iPhone: botón <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>.</p>
