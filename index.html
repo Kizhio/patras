@@ -174,7 +174,7 @@ const PHRASES={
  'Absurdas':['El pulpo toca la guitarra','Mi vecino es un dinosaurio','Las nubes saben a fresa','Un pingüino con bufanda','El lunes huele a queso','Mi abuela conduce un tanque','El sofá tiene hambre','Hoy llueven croquetas','Un tiburón en la bañera','El gato habla francés','La luna es de chocolate','Mi perro juega al ajedrez','Las zanahorias cantan ópera','Un fantasma con resfriado','El wifi está de vacaciones','Mi tostadora tiene novio','Un koala en el metro','El lavavajillas baila flamenco','Tengo un dragón en el garaje','Las patatas quieren votar']
 };
 const pick=cat=>rand(PHRASES[cat]||Object.values(PHRASES).flat());
-const MAX=10,MIN=3,MIN_ON=2,MAXSEC=5;
+const MAX=10,MIN=2,MAXSEC=5;
 const $=s=>document.querySelector(s),app=$('#app');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rand=a=>a[Math.floor(Math.random()*a.length)];
@@ -251,12 +251,12 @@ function applyScores(scores,correct,rec,imi){correct.forEach(p=>scores[p]++);if(
 /* ---------- inicio ---------- */
 function home(){
  app.innerHTML=`<img class="logoimg" src="icon-512.png?v=2" alt="Patrás"><p class="tag">Graba. Dale la vuelta. Imita. Adivina.</p>
- <button class="btn primary mode" id="local"><span class="ic">📱</span><span><b>Un solo móvil</b><small>Todos juntos en la misma sala. El móvil va pasando de mano en mano: uno graba, otro imita, el resto adivina.</small></span><span class="ch">›</span></button>
- <button class="btn alt mode" id="online"><span class="ic">📲</span><span><b>Cada uno con su móvil</b><small>Juntos o a distancia. Uno crea la sala y los demás entran con el enlace o el código. Desde 2 jugadores.</small></span><span class="ch">›</span></button>
+ <button class="btn primary mode" id="local"><span class="ic">📱</span><span><b>Un solo móvil</b><small>Todos juntos en la misma sala. El móvil va pasando de mano en mano: uno graba, otro imita, el resto adivina. De 2 a 10 jugadores.</small></span><span class="ch">›</span></button>
+ <button class="btn alt mode" id="online"><span class="ic">📲</span><span><b>Cada uno con su móvil</b><small>Juntos o a distancia. Uno crea la sala y los demás entran con el enlace o el código. De 2 a 10 jugadores.</small></span><span class="ch">›</span></button>
  ${skinBtn()}
  <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un solo móvil:</b> os lo vais pasando. <b>Cada uno con su móvil:</b> uno crea la sala y los demás entran con el enlace o el código, estén donde estén.</p></details>
  <button class="btn" id="install" style="display:none">📲 Instalar la app</button><p class="hint" id="ios" style="display:none">📲 Para instalarla en iPhone: botón <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>.</p>
- <footer>Gratis y sin servidor · de 3 a 10 jugadores en un móvil, desde 2 online</footer>`;
+ <footer>Gratis y sin servidor · de 2 a 10 jugadores</footer>`;
  bindSkin(home);$('#local').onclick=localSetup;$('#online').onclick=()=>onlineHome();
  showInstall();if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!standalone())$('#ios').style.display='block';
 }
@@ -302,7 +302,7 @@ function screenImitate(){
  $('#ok').onclick=()=>pass('todos','🔊 Reunid a todo el grupo para el momento de la verdad.',screenReveal);
 }
 function screenReveal(){
- const others=S.players.filter(p=>p!==S.rec&&p!==S.imi);
+ const others=S.players.length===2?[S.imi]:S.players.filter(p=>p!==S.rec&&p!==S.imi);
  app.innerHTML=`${hdr(S.turn,S.total,S.rec,S.imi)}<h1>🔊 Momento de la verdad</h1><p class="hint">Esto es la imitación de ${esc(S.imi)}… <b>dada la vuelta</b>. ¿Qué frase dijo ${esc(S.rec)}?</p>
  <canvas id="wave"></canvas><button class="btn primary" id="p1">🔁 Reproducir</button>
  <div class="card"><h2>¿Quién lo ha adivinado?</h2><div class="guess">${others.map(p=>`<label><input type="checkbox" value="${esc(p)}"><span>${esc(p)}</span></label>`).join('')}</div></div>
@@ -398,7 +398,7 @@ function renderOnline(){
   const url=roomURL(G.code);
   app.innerHTML=`<h1>🌐 Sala</h1><div class="code">${G.code}</div><p class="url">${esc(url)}</p><button class="btn alt" id="share">📲 Compartir enlace</button><p class="hint">Jugadores: ${G.players.length}/${MAX}</p>
   <div class="card"><div class="players">${G.players.map(p=>`<span class="chip">${esc(p)}${p===me?' (tú)':''}</span>`).join('')}</div></div>
-  ${H?`${optsUI(G)}<button class="btn primary" id="start" ${G.players.length<MIN_ON?'disabled':''}>Empezar ▶ ${G.players.length<MIN_ON?'(mínimo '+MIN_ON+')':''}</button>`:'<p class="hint"><span class="spin">⏳</span> Esperando a que el anfitrión empiece…</p>'}
+  ${H?`${optsUI(G)}<button class="btn primary" id="start" ${G.players.length<MIN?'disabled':''}>Empezar ▶ ${G.players.length<MIN?'(mínimo '+MIN+')':''}</button>`:'<p class="hint"><span class="spin">⏳</span> Esperando a que el anfitrión empiece…</p>'}
   ${skinBtn()}${back}`;
   $('#share').onclick=()=>share(url);bindSkin(renderOnline);bindBack();
   if(H){bindOpts(G);$('#start').onclick=()=>{Object.assign(OPTS,{vueltas:G.vueltas,cat:G.cat,pistas:G.pistas});localStorage.setItem('opts',JSON.stringify(OPTS));send({t:'start',opts:{vueltas:G.vueltas,cat:G.cat,pistas:G.pistas}})}}
