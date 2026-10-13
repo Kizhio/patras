@@ -1,7 +1,10 @@
 # ⏪ Rebobina
 
 Juego de fiesta tipo *Backtalk*: graba una frase, dale la vuelta, imítala y adivina.
-Un solo archivo HTML, sin servidor, sin cuentas, gratis. Se juega en el móvil pasándolo de mano en mano.
+Un solo archivo HTML, sin servidor propio, sin cuentas, gratis.
+
+- **Un móvil:** os lo vais pasando de mano en mano.
+- **Online:** cada uno en su móvil. Uno crea la sala, comparte un código de 4 letras y los demás se unen. El audio viaja directo entre móviles por WebRTC (PeerJS, señalización pública gratuita).
 
 - De 3 a 10 jugadores, marcador con podio y confeti
 - 11 skins: Halloween, Navidad, Neón, Arcade, Océano, Espacio, Bosque, Kawaii, Playa, Fiesta, Pirata
