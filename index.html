@@ -65,6 +65,9 @@ body{font-family:var(--font);color:var(--fg);background:linear-gradient(160deg,v
 #homebtn[hidden]{display:none}
 #update{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:40;background:var(--accent2);color:#000;border-radius:999px;padding:10px 12px 10px 16px;font-weight:700;font-size:.95rem;display:flex;gap:10px;align-items:center;box-shadow:0 8px 30px -6px #000;animation:in .4s ease-out;white-space:nowrap;max-width:calc(100vw - 24px)}
 #update[hidden]{display:none}
+.roomrow{display:flex;align-items:center;gap:8px;margin:8px 0}
+.roomrow>span{flex:1;min-width:0}.roomrow small{display:block;color:var(--muted);font-size:.78rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.roomrow .btn{width:auto;margin:0;padding:10px 14px;font-size:.95rem}.roomrow .link{margin:0}
 .fakebar{display:flex;align-items:center;gap:10px;background:#fff;color:#222;border-radius:999px;padding:8px 14px;margin:6px 0 14px;font-size:.95rem;box-shadow:0 4px 14px -4px #000}
 .fakebar .tap{position:relative;font-weight:800;background:var(--accent2);color:#000;border-radius:999px;padding:4px 10px;animation:pulse 1.4s infinite}
 .fakebar .tap i{position:absolute;left:0;top:110%;font-style:normal;font-size:.75rem;white-space:nowrap;color:var(--fg);text-shadow:0 1px 4px #000}
@@ -315,11 +318,12 @@ function home(){
  app.innerHTML=`<img class="logoimg" src="icon-512.png?v=3" alt="Patrás"><p class="tag">Graba. Dale la vuelta. Imita. Adivina.</p>
  <button class="btn primary mode" id="local"><span class="ic">📱</span><span><b>Un solo móvil</b><small>Todos juntos en la misma sala. El móvil va pasando de mano en mano: uno graba, otro imita, el resto adivina. De 2 a 10 jugadores.</small></span><span class="ch">›</span></button>
  <button class="btn alt mode" id="online"><span class="ic">📲</span><span><b>Cada uno con su móvil</b><small>Juntos o a distancia. Uno crea la sala y los demás entran con el enlace o el código. De 2 a 10 jugadores.</small></span><span class="ch">›</span></button>
- ${skinBtn()}
+ ${roomsUI()}${skinBtn()}
  <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un solo móvil:</b> os lo vais pasando. <b>Cada uno con su móvil:</b> uno crea la sala y los demás entran con el enlace o el código, estén donde estén.</p></details>
+ <button class="btn" id="hist" ${LS.get('hist',[]).length?'':'style="display:none"'}>📜 Historial de partidas</button>
  <button class="btn" id="install" style="display:none">📲 Instalar la app</button><p class="hint" id="ios" style="display:none">📲 Para instalarla en iPhone: botón <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>.</p>
  <footer>Gratis y sin servidor · de 2 a 10 jugadores</footer>`;
- bindSkin(home);$('#local').onclick=localSetup;$('#online').onclick=()=>onlineHome();
+ bindSkin(home);$('#local').onclick=localSetup;$('#online').onclick=()=>onlineHome();$('#hist').onclick=histScreen;bindRooms(home);
  showInstall();if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!standalone())$('#ios').style.display='block';
 }
 /* ---------- PWA: instalar y funcionar sin conexión ---------- */
@@ -338,9 +342,14 @@ function localSetup(){
  bindOpts(OPTS);$('#start').onclick=()=>{localStorage.setItem('opts',JSON.stringify(OPTS));micGate(startGame)};$('#back').onclick=home;
 }
 const save=()=>localStorage.setItem('players',JSON.stringify(S.players));
+const LS={get:(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}},set:(k,v)=>localStorage.setItem(k,JSON.stringify(v))};
+const saveRoom=(code,name)=>LS.set('rooms',[{code,name:name||'',ts:Date.now()},...LS.get('rooms',[]).filter(r=>r.code!==code)].slice(0,8));
+const saveRecent=code=>LS.set('recent',[{code,ts:Date.now()},...LS.get('recent',[]).filter(r=>r.code!==code)].slice(0,3));
+function saveHist(id,mode,scores){const h=LS.get('hist',[]);if(h.some(x=>x.id===id))return;h.unshift({id,ts:Date.now(),mode,scores});LS.set('hist',h.slice(0,30))}
+const fecha=ts=>new Date(ts).toLocaleDateString('es',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
 
 /* ---------- modo un móvil ---------- */
-function startGame(){S.turn=0;S.total=OPTS.vueltas*S.players.length;S.scores=Object.fromEntries(S.players.map(p=>[p,0]));nextTurn()}
+function startGame(){S.gid=Date.now();S.turn=0;S.total=OPTS.vueltas*S.players.length;S.scores=Object.fromEntries(S.players.map(p=>[p,0]));nextTurn()}
 function nextTurn(){if(S.turn>=S.total)return final();const n=S.players.length;S.rec=S.players[S.turn%n];S.imi=S.players[(S.turn+1)%n];S.orig=S.imit=null;S.phrase=pick(OPTS.cat);pass(S.rec,'🎙️ Te toca grabar la frase secreta. ¡Que nadie te oiga!',screenRecord)}
 function pass(name,msg,next){app.innerHTML=`<div class="center"><p class="big">📱</p><h2>Pasa el móvil a</h2><h1>${esc(name)}</h1><p class="hint">${msg}</p><button class="btn primary" id="go">Soy ${esc(name)} ✋</button></div>`;$('#go').onclick=next}
 const hdr=(turn,total,rec,imi)=>`<div class="top"><span>Turno ${turn+1}/${total}</span><span>🎙️ ${esc(rec)} · 🎭 ${esc(imi)}</span></div>`;
@@ -380,9 +389,27 @@ function scoreboard(hits){
  animateBars();$('#go').onclick=nextTurn;$('#quit').onclick=final;
 }
 function final(){
- confetti();const [w]=Object.entries(S.scores).sort((a,b)=>b[1]-a[1]);
+ saveHist(S.gid,'local',S.scores);confetti();const [w]=Object.entries(S.scores).sort((a,b)=>b[1]-a[1]);
  app.innerHTML=`<div class="center"><p class="big">🏆</p><h2>Gana</h2><h1>${esc(w[0])}</h1></div><div class="card">${scoreTable(S.scores)}</div><button class="btn primary" id="again">🔁 Otra partida</button><button class="btn" id="home">🏠 Inicio</button>`;
  animateBars();$('#again').onclick=startGame;$('#home').onclick=home;
+}
+
+/* ---------- salas guardadas e historial ---------- */
+function roomsUI(){const R=LS.get('rooms',[]),C=LS.get('recent',[]).filter(c=>!R.some(r=>r.code===c.code));if(!R.length&&!C.length)return'';
+ return`<section class="card"><h2>🌐 Tus salas</h2>${R.map(r=>`<div class="roomrow"><span><b>${esc(r.name||'Sala '+r.code)}</b><small>Código ${r.code} · creada por ti · ${fecha(r.ts)}</small></span><button class="btn alt" data-open="${r.code}">Reabrir</button><button class="link" data-del="${r.code}" title="Olvidar">✕</button></div>`).join('')}
+ ${C.map(r=>`<div class="roomrow"><span><b>Sala ${r.code}</b><small>Entraste ${fecha(r.ts)}</small></span><button class="btn" data-join="${r.code}">Entrar de nuevo</button><button class="link" data-delr="${r.code}" title="Olvidar">✕</button></div>`).join('')}</section>`}
+function bindRooms(re){
+ const me=localStorage.getItem('me')||'';
+ document.querySelectorAll('[data-open]').forEach(b=>b.onclick=()=>{const r=LS.get('rooms',[]).find(x=>x.code===b.dataset.open);if(!me)return onlineHome();micGate(()=>hostRoom(me,r.code,r.name))});
+ document.querySelectorAll('[data-join]').forEach(b=>b.onclick=()=>me?micGate(()=>joinRoom(me,b.dataset.join)):onlineHome(b.dataset.join));
+ document.querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{LS.set('rooms',LS.get('rooms',[]).filter(x=>x.code!==b.dataset.del));re()});
+ document.querySelectorAll('[data-delr]').forEach(b=>b.onclick=()=>{LS.set('recent',LS.get('recent',[]).filter(x=>x.code!==b.dataset.delr));re()});
+}
+function histScreen(){
+ const h=LS.get('hist',[]);
+ app.innerHTML=`<h1>📜 Historial</h1><p class="hint">Guardado en este móvil. ${h.length} partida${h.length===1?'':'s'}.</p>${h.map(x=>{const w=Object.entries(x.scores).sort((a,b)=>b[1]-a[1]);return`<div class="card"><div class="top"><span>${fecha(x.ts)}</span><span>${x.mode==='online'?'📱📱 Online':'📱 Un móvil'}</span></div><h2 style="text-transform:none;color:var(--fg);font-size:1.2rem">🏆 ${esc(w[0][0])}</h2>${scoreTable(x.scores)}</div>`}).join('')||'<p class="hint">Aún no hay partidas terminadas.</p>'}
+ ${h.length?'<button class="link" id="clear">Borrar historial</button>':''}<button class="btn" id="back">← Volver</button>`;
+ animateBars();$('#back').onclick=home;const c=$('#clear');if(c)c.onclick=()=>{if(confirm('¿Borrar todo el historial?')){localStorage.removeItem('hist');home()}};
 }
 
 /* ---------- modo online (WebRTC vía PeerJS, sin servidor propio) ---------- */
@@ -398,23 +425,23 @@ function onlineHome(code=''){
  if(code&&saved)return joinRoom(saved,code);
  app.innerHTML=`<h1>📱📱 Cada uno con su móvil</h1><p class="hint">Desde 2 jugadores, juntos o a distancia. Uno crea la sala y comparte el enlace o el código.</p>
  <div class="card"><input id="me" placeholder="Tu nombre" maxlength="14" autocomplete="off" value="${esc(saved)}"></div>
- ${code?'':'<button class="btn primary" id="host">➕ Crear sala</button>'}
+ ${code?'':'<div class="card"><input id="rname" placeholder="Nombre de la sala (opcional, p. ej. Los viernes)" maxlength="24" autocomplete="off"></div><button class="btn primary" id="host">➕ Crear sala</button>'}
  <div class="card"><form class="add" id="joinf"><input id="code" placeholder="CÓDIGO" maxlength="4" autocomplete="off" value="${esc(code)}" style="text-transform:uppercase;letter-spacing:.2em"><button class="btn alt" style="width:auto;margin:0">Unirse</button></form></div>
  <p id="st"></p><button class="link" id="back">← Volver</button>`;
  const me=()=>{const v=$('#me').value.trim();if(!v){status('Pon tu nombre');return null}localStorage.setItem('me',v);return v};
- const h=$('#host');if(h)h.onclick=()=>{const m=me();if(m)micGate(()=>hostRoom(m))};
+ const h=$('#host');if(h)h.onclick=()=>{const m=me(),rn=$('#rname').value.trim();if(m)micGate(()=>hostRoom(m,'',rn))};
  $('#joinf').onsubmit=e=>{e.preventDefault();const m=me(),c=$('#code').value.trim().toUpperCase();if(m&&c.length===4)micGate(()=>joinRoom(m,c))};
  $('#back').onclick=home;if(code)$('#me').focus();
 }
 function waitScreen(icon,msg){app.innerHTML=`<div class="center"><p class="big">${icon}</p><h2>${msg}</h2><p class="hint"><span class="spin">⏳</span> Mientras tanto, nada de trampas…</p></div>`}
 function send(m){N.host?handle(null,m):N.hostConn.send(m)}
-function hostRoom(me){
- const c=mkCode(),peer=new Peer('rebobina-'+c);
- N={me,host:true,peer,conns:new Map(),A:{},P:{},G:{phase:'lobby',code:c,players:[me],scores:{},turn:0,total:0,guesses:[],...OPTS}};
+function hostRoom(me,code,name){ // code: reabrir una sala guardada con su mismo código
+ const c=code||mkCode(),peer=new Peer('rebobina-'+c);
+ N={me,host:true,peer,conns:new Map(),A:{},P:{},G:{phase:'lobby',code:c,name:name||'',players:[me],scores:{},turn:0,total:0,guesses:[],...OPTS}};
  waitScreen('📡','Creando sala…');
- peer.on('open',()=>renderOnline());
+ peer.on('open',()=>{saveRoom(c,name);renderOnline()});
  peer.on('disconnected',()=>{if(N&&N.peer===peer)peer.reconnect()});
- peer.on('error',e=>e.type==='unavailable-id'?hostRoom(me):e.type==='peer-unavailable'?0:errScreen(`No se pudo crear la sala (${e.type}). Revisa tu conexión.`));
+ peer.on('error',e=>e.type==='unavailable-id'?(code?(N=null,app.innerHTML=`<div class="center"><p class="big">🚧</p><h2>El código ${esc(code)} está en uso ahora mismo</h2><p class="hint">Otro grupo tiene abierta una sala con ese código. Puedes crear la sala con un código nuevo (tendrás que compartir el enlace otra vez).</p><button class="btn primary" id="newc">Crear con otro código</button><button class="link" id="b">← Volver</button></div>`,$('#newc').onclick=()=>hostRoom(me,'',name),$('#b').onclick=home):hostRoom(me,'',name)):e.type==='peer-unavailable'?0:errScreen(`No se pudo crear la sala (${e.type}). Revisa tu conexión.`));
  peer.on('connection',conn=>{conn.on('data',m=>handle(conn,m));conn.on('close',()=>{if(!N||!conn.name||N.conns.get(conn.name)!==conn)return;N.conns.delete(conn.name);if(N.G.phase==='lobby')N.G.players=N.G.players.filter(p=>p!==conn.name);bcast()})});
 }
 function joinRoom(me,c,retry=0){
@@ -422,7 +449,7 @@ function joinRoom(me,c,retry=0){
  waitScreen('📡',retry?`Reconectando… (intento ${retry})`:'Conectando a la sala '+c+'…');
  let done=false;const again=()=>{if(done||!N||N.peer!==peer)return;done=true;peer.destroy();if(retry>=6)return errScreen('No consigo conectar con la sala. ¿Sigue abierta en el móvil del anfitrión?');setTimeout(()=>joinRoom(me,c,retry+1),1500*(retry+1))};
  peer.on('open',()=>{const conn=peer.connect('rebobina-'+c,{reliable:true});N.hostConn=conn;
-  conn.on('open',()=>{conn.send({t:'join',name:me});sessionStorage.setItem('room',JSON.stringify({me,c}));retry=0});
+  conn.on('open',()=>{conn.send({t:'join',name:me});sessionStorage.setItem('room',JSON.stringify({me,c}));saveRecent(c);retry=0});
   conn.on('data',m=>{if(m.t==='state'){if(m.G.phase==='record'&&N.G?.phase!=='record')N.A={};N.G=m.G;renderOnline()}else if(m.t==='audio'){N.A[m.kind]=fromPCM(m.data,m.rate);renderOnline()}else if(m.t==='chat'){addChat(m)}else if(m.t==='err'){N=null;peer.destroy();errScreen(m.msg)}});
   conn.on('close',again);conn.on('error',again)});
  peer.on('error',e=>e.type==='peer-unavailable'&&!retry?errScreen('No existe ninguna sala con ese código.'):again());
@@ -442,7 +469,8 @@ function handle(conn,m){ // solo en el anfitrión
   if(!dup&&G.players.length>=MAX)return conn.send({t:'err',msg:'Sala llena (10)'});
   const old=N.conns.get(m.name);if(old&&old!==conn)old.close(); // misma persona volviendo a entrar
   conn.name=m.name;N.conns.set(m.name,conn);if(!dup)G.players.push(m.name);return bcast()}
- if(m.t==='start'){Object.assign(G,m.opts);G.total=G.vueltas*G.players.length;G.turn=0;G.scores=Object.fromEntries(G.players.map(p=>[p,0]));newTurn();return bcast()}
+
+ if(m.t==='start'){G.gid=Date.now();Object.assign(G,m.opts);G.total=G.vueltas*G.players.length;G.turn=0;G.scores=Object.fromEntries(G.players.map(p=>[p,0]));newTurn();return bcast()}
  if(m.t==='audio'){N.P[m.kind]={data:m.data,rate:m.rate};N.A[m.kind]=fromPCM(m.data,m.rate);
   if(m.kind==='orig'){G.phrase=m.phrase||G.phrase;G.phase='imitate';if(G.imi!==N.me)sendAudio('orig',N.conns.get(G.imi))}
   else{G.phase='reveal';G.guesses=[];sendAudio('imit','all')}
@@ -459,7 +487,7 @@ function renderOnline(){
  const back=`<button class="link" id="leave">Salir de la sala</button>`,bindBack=()=>{const b=$('#leave');if(b)b.onclick=()=>{const p=N.peer;N=null;sessionStorage.removeItem('room');p.destroy();home()}};
  if(G.phase==='lobby'){
   const url=roomURL(G.code);
-  app.innerHTML=`<h1>🌐 Sala</h1><div class="code">${G.code}</div><p class="url">${esc(url)}</p><button class="btn alt" id="share">📲 Compartir enlace</button><p class="hint">Jugadores: ${G.players.length}/${MAX}</p>
+  app.innerHTML=`<h1>🌐 ${esc(G.name||'Sala')}</h1><div class="code">${G.code}</div><p class="url">${esc(url)}</p><button class="btn alt" id="share">📲 Compartir enlace</button><p class="hint">Jugadores: ${G.players.length}/${MAX}</p>
   <div class="card"><div class="players">${G.players.map(p=>`<span class="chip">${esc(p)}${p===me?' (tú)':''}</span>`).join('')}</div></div>
   ${H?`${optsUI(G)}<button class="btn primary" id="start" ${G.players.length<MIN?'disabled':''}>Empezar ▶ ${G.players.length<MIN?'(mínimo '+MIN+')':''}</button>`:'<p class="hint"><span class="spin">⏳</span> Esperando a que el anfitrión empiece…</p>'}
   ${skinBtn()}${back}`;
@@ -503,7 +531,7 @@ function renderOnline(){
   app.innerHTML=`<h1>📊 Marcador</h1><p class="hint">${G.hits?`¡${G.hits} acierto${G.hits>1?'s':''}! 🎉`:'Nadie lo pilló… 😅'}</p><div class="card">${scoreTable(G.scores)}</div>${H?`<button class="btn primary" id="next">${G.turn>=G.total?'🏆 Resultado final':'Siguiente turno ▶'}</button>`:'<p class="hint"><span class="spin">⏳</span> El anfitrión pasa al siguiente turno…</p>'}`;
   animateBars();if(H)$('#next').onclick=()=>send({t:'next'});return}
  if(G.phase==='final'){
-  confetti();const [w]=Object.entries(G.scores).sort((a,b)=>b[1]-a[1]);
+  saveHist(G.gid,'online',G.scores);confetti();const [w]=Object.entries(G.scores).sort((a,b)=>b[1]-a[1]);
   app.innerHTML=`<div class="center"><p class="big">🏆</p><h2>Gana</h2><h1>${esc(w[0])}</h1></div><div class="card">${scoreTable(G.scores)}</div>${H?`<button class="btn primary" id="again">🔁 Otra partida</button>`:''}${back}`;
   animateBars();bindBack();if(H)$('#again').onclick=()=>send({t:'again'})}
 }
