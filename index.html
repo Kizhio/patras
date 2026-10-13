@@ -65,6 +65,13 @@ body{font-family:var(--font);color:var(--fg);background:linear-gradient(160deg,v
 #homebtn[hidden]{display:none}
 #update{position:fixed;top:12px;left:50%;transform:translateX(-50%);z-index:40;background:var(--accent2);color:#000;border-radius:999px;padding:10px 12px 10px 16px;font-weight:700;font-size:.95rem;display:flex;gap:10px;align-items:center;box-shadow:0 8px 30px -6px #000;animation:in .4s ease-out;white-space:nowrap;max-width:calc(100vw - 24px)}
 #update[hidden]{display:none}
+.fakebar{display:flex;align-items:center;gap:10px;background:#fff;color:#222;border-radius:999px;padding:8px 14px;margin:6px 0 14px;font-size:.95rem;box-shadow:0 4px 14px -4px #000}
+.fakebar .tap{position:relative;font-weight:800;background:var(--accent2);color:#000;border-radius:999px;padding:4px 10px;animation:pulse 1.4s infinite}
+.fakebar .tap i{position:absolute;left:0;top:110%;font-style:normal;font-size:.75rem;white-space:nowrap;color:var(--fg);text-shadow:0 1px 4px #000}
+.fakebar .url{opacity:.7;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.step{display:flex;align-items:center;gap:12px;background:rgba(0,0,0,.2);border-radius:16px;padding:10px 12px;margin:8px 0;line-height:1.3}
+.step b{width:28px;height:28px;border-radius:50%;background:var(--accent);color:#000;display:grid;place-items:center;flex:none}
+.step .si{font-size:1.5rem;flex:none;width:34px;text-align:center}
 #update button{border:0;border-radius:999px;background:#000;color:#fff;font:inherit;font-weight:800;padding:8px 14px;cursor:pointer}
 body.ingame #app{padding-top:60px}
 body.chat #app{padding-bottom:96px}
@@ -278,11 +285,16 @@ async function micGate(next){
   // Estado real del permiso: 'prompt' = volverá a preguntar; 'denied' = bloqueado, solo el usuario puede cambiarlo en Ajustes
   let state='unknown';try{state=(await navigator.permissions.query({name:'microphone'})).state}catch(x){}
   const ua=navigator.userAgent,ios=/iphone|ipad|ipod/i.test(ua),android=/android/i.test(ua),inst=standalone();
+  // Guía visual: barra de direcciones de mentira con el candado señalado + pasos como tarjetas
+  const bar=(icon,txt)=>`<div class="fakebar"><span class="tap">${icon}<i>👆 toca aquí</i></span><span class="url">${txt}</span></div>`;
+  const step=(n,icon,t)=>`<div class="step"><b>${n}</b><span class="si">${icon}</span><span>${t}</span></div>`;
+  const guide=ios?(inst?[step(1,'⚙️','Abre <b>Ajustes</b> del iPhone'),step(2,'⏪','Baja y entra en <b>Patrás</b>'),step(3,'🎤','Activa el interruptor <b>Micrófono</b>')]
+     :[bar('AA','kizhio.github.io/patras'),step(1,'AA','Toca <b>AA</b> a la izquierda de la dirección'),step(2,'⚙️','<b>Ajustes del sitio web</b>'),step(3,'🎤','<b>Micrófono</b> → <b>Permitir</b>')])
+    :android?(inst?[`<a class="btn alt" style="text-decoration:none" href="intent://kizhio.github.io/patras/?permiso=1#Intent;scheme=https;package=com.android.chrome;end">🌐 Abrir en Chrome para dar permiso</a>`,step(1,'🔒','En Chrome, toca el <b>candado</b> junto a la dirección → <b>Permisos</b> → <b>Micrófono</b> → <b>Permitir</b>'),step(2,'⏪','Vuelve a la app Patrás y pulsa <b>Volver a intentarlo</b>'),`<p class="hint" style="margin:10px 0 0">O bien: Ajustes de Android → Aplicaciones → Patrás → Permisos → Micrófono.</p>`]
+     :[bar('🔒','kizhio.github.io/patras'),step(1,'🔒','Toca el <b>candado</b> junto a la dirección'),step(2,'🎤','<b>Permisos</b> → <b>Micrófono</b>'),step(3,'✅','Elige <b>Permitir</b>')])
+    :[bar('🔒','kizhio.github.io/patras'),step(1,'🔒','Haz clic en el <b>candado</b> a la izquierda de la dirección'),step(2,'🎤','Pon <b>Micrófono</b> en <b>Permitir</b>')];
   const steps=noDev?'':state!=='denied'?`<p class="hint">Pulsa <b>Volver a intentarlo</b> y, cuando aparezca la pregunta, elige <b>Permitir</b>.</p>`
-   :`<div class="card" style="text-align:left"><b>El micrófono está bloqueado para Patrás. Actívalo así:</b><ol style="margin:8px 0 0;padding-left:20px;line-height:1.5">${
-     ios?(inst?'<li>Abre <b>Ajustes</b> del iPhone.</li><li>Baja hasta <b>Patrás</b>.</li><li>Activa <b>Micrófono</b>.</li>':'<li>Toca <b>AA</b> (o el icono de ajustes) a la izquierda de la dirección.</li><li><b>Ajustes del sitio web</b> → <b>Micrófono</b> → <b>Permitir</b>.</li><li>Si no aparece: Ajustes del iPhone → Safari → Micrófono → Permitir.</li>')
-     :android?(inst?'<li>Abre <b>Ajustes</b> de Android → <b>Aplicaciones</b>.</li><li>Busca <b>Patrás</b> → <b>Permisos</b> → <b>Micrófono</b> → Permitir.</li><li>Si no está ahí: abre Chrome, entra en kizhio.github.io/patras, toca el candado 🔒 → Permisos → Micrófono.</li>':'<li>Toca el <b>candado 🔒</b> (o el icono de ajustes) junto a la dirección.</li><li><b>Permisos</b> → <b>Micrófono</b> → <b>Permitir</b>.</li>')
-     :'<li>Haz clic en el <b>candado 🔒</b> o el icono de ajustes a la izquierda de la dirección.</li><li>Pon <b>Micrófono</b> en <b>Permitir</b>.</li>'}<li>Vuelve aquí y pulsa <b>Volver a intentarlo</b>.</li></ol></div>`;
+   :`<div class="card" style="text-align:left"><p style="margin:0 0 10px"><b>El micrófono está bloqueado para Patrás.</b> Actívalo así y vuelve: la app lo detecta sola.</p>${guide.join('')}</div>`;
   app.innerHTML=`<div class="center"><p class="big">🎤</p><h2>${noDev?'No encuentro ningún micrófono':'Necesito el micrófono'}</h2><p class="hint">${noDev?'Este dispositivo no tiene micrófono disponible o lo está usando otra app.':'Sin micrófono no se puede grabar ni imitar.'}</p>${steps}
   <button class="btn primary" id="retry">🔁 Volver a intentarlo</button><button class="link" id="skip">Seguir sin probar ahora</button></div>`;
   $('#retry').onclick=()=>micGate(next);$('#skip').onclick=next}
