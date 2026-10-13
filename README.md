@@ -1,4 +1,4 @@
-# ⏪ Rebobina
+# ⏪ Patrás
 
 Juego de fiesta tipo *Backtalk*: graba una frase, dale la vuelta, imítala y adivina.
 Un solo archivo HTML, sin servidor propio, sin cuentas, gratis.
@@ -11,10 +11,10 @@ Un solo archivo HTML, sin servidor propio, sin cuentas, gratis.
 
 ## Publicar gratis en GitHub Pages
 
-1. Crea un repositorio público en GitHub llamado `rebobina`.
+1. Crea un repositorio público en GitHub llamado `patras`.
 2. Sube `index.html` y este `README.md`.
 3. En el repo: **Settings → Pages → Branch: main / (root) → Save**.
-4. En un minuto estará en `https://TU_USUARIO.github.io/rebobina/`.
+4. En un minuto estará en `https://TU_USUARIO.github.io/patras/`.
 
 El micrófono solo funciona por HTTPS, y GitHub Pages ya lo da.
 

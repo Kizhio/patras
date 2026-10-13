@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Rebobina</title>
+<title>Patrás</title>
 <meta name="description" content="Graba una frase, dale la vuelta, imítala y adivina. Juego de fiesta gratis, en un móvil u online.">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
@@ -136,7 +136,7 @@ function applyScores(scores,correct,rec,imi){correct.forEach(p=>scores[p]++);if(
 
 /* ---------- inicio ---------- */
 function home(){
- app.innerHTML=`<h1 class="logo">⏪ Rebobina</h1><p class="tag">Graba. Dale la vuelta. Imita. Adivina.</p>
+ app.innerHTML=`<h1 class="logo">⏪ Patrás</h1><p class="tag">Graba. Dale la vuelta. Imita. Adivina.</p>
  ${themePicker()}
  <div class="row"><button class="btn primary" id="local">📱 Un móvil</button><button class="btn alt" id="online">🌐 Online</button></div>
  <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un móvil:</b> os lo vais pasando. <b>Online:</b> cada uno en su móvil, con un código de sala.</p></details>
