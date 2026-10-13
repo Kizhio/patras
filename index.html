@@ -271,11 +271,20 @@ function recorderUI(done){ // cuenta atrás 3-2-1, tope de MAXSEC segundos, toca
 async function micGate(next){
  try{const st=await navigator.mediaDevices.getUserMedia({audio:true});st.getTracks().forEach(t=>t.stop());return next()}
  catch(e){const noDev=/NotFound|Devices/i.test(e.name||'');
-  app.innerHTML=`<div class="center"><p class="big">🎤</p><h2>${noDev?'No encuentro ningún micrófono':'Necesito el micrófono'}</h2><p class="hint">${noDev?'Este dispositivo no tiene micrófono disponible o está ocupado por otra app.':'Sin micrófono no se puede grabar ni imitar. Cuando el navegador lo pregunte, pulsa <b>Permitir</b>.'}</p>
-  <div class="card" style="text-align:left"><b>Si no te vuelve a preguntar:</b><ul style="margin:8px 0 0;padding-left:20px"><li><b>Android / Chrome:</b> toca el candado 🔒 junto a la dirección → Permisos → Micrófono → Permitir.</li><li><b>iPhone:</b> Ajustes → Safari → Micrófono → Permitir. Si la app está instalada: Ajustes → Patrás → Micrófono.</li></ul></div>
+  // Estado real del permiso: 'prompt' = volverá a preguntar; 'denied' = bloqueado, solo el usuario puede cambiarlo en Ajustes
+  let state='unknown';try{state=(await navigator.permissions.query({name:'microphone'})).state}catch(x){}
+  const ua=navigator.userAgent,ios=/iphone|ipad|ipod/i.test(ua),android=/android/i.test(ua),inst=standalone();
+  const steps=noDev?'':state!=='denied'?`<p class="hint">Pulsa <b>Volver a intentarlo</b> y, cuando aparezca la pregunta, elige <b>Permitir</b>.</p>`
+   :`<div class="card" style="text-align:left"><b>El micrófono está bloqueado para Patrás. Actívalo así:</b><ol style="margin:8px 0 0;padding-left:20px;line-height:1.5">${
+     ios?(inst?'<li>Abre <b>Ajustes</b> del iPhone.</li><li>Baja hasta <b>Patrás</b>.</li><li>Activa <b>Micrófono</b>.</li>':'<li>Toca <b>AA</b> (o el icono de ajustes) a la izquierda de la dirección.</li><li><b>Ajustes del sitio web</b> → <b>Micrófono</b> → <b>Permitir</b>.</li><li>Si no aparece: Ajustes del iPhone → Safari → Micrófono → Permitir.</li>')
+     :android?(inst?'<li>Abre <b>Ajustes</b> de Android → <b>Aplicaciones</b>.</li><li>Busca <b>Patrás</b> → <b>Permisos</b> → <b>Micrófono</b> → Permitir.</li><li>Si no está ahí: abre Chrome, entra en kizhio.github.io/patras, toca el candado 🔒 → Permisos → Micrófono.</li>':'<li>Toca el <b>candado 🔒</b> (o el icono de ajustes) junto a la dirección.</li><li><b>Permisos</b> → <b>Micrófono</b> → <b>Permitir</b>.</li>')
+     :'<li>Haz clic en el <b>candado 🔒</b> o el icono de ajustes a la izquierda de la dirección.</li><li>Pon <b>Micrófono</b> en <b>Permitir</b>.</li>'}<li>Vuelve aquí y pulsa <b>Volver a intentarlo</b>.</li></ol></div>`;
+  app.innerHTML=`<div class="center"><p class="big">🎤</p><h2>${noDev?'No encuentro ningún micrófono':'Necesito el micrófono'}</h2><p class="hint">${noDev?'Este dispositivo no tiene micrófono disponible o lo está usando otra app.':'Sin micrófono no se puede grabar ni imitar.'}</p>${steps}
   <button class="btn primary" id="retry">🔁 Volver a intentarlo</button><button class="link" id="skip">Seguir sin probar ahora</button></div>`;
   $('#retry').onclick=()=>micGate(next);$('#skip').onclick=next}
 }
+// Al volver de Ajustes (la app vuelve a primer plano), reintenta solo si sigue en la pantalla del micrófono
+document.addEventListener('visibilitychange',()=>{const b=$('#retry');if(document.visibilityState==='visible'&&b)b.click()});
 const recordBlock=hint=>`<canvas id="wave"></canvas><div class="rec" id="rec">🎙️</div><p class="hint" id="status">${hint}</p>`;
 const phraseBox=(pistas,phrase)=>`<div class="card"><input class="phrase" id="ph" maxlength="60" autocomplete="off" value="${pistas?esc(phrase):''}" placeholder="${pistas?'Tu frase':'Escribe tu frase en secreto…'}">${pistas?'<button class="link" id="other">🔀 Otra frase sugerida</button><p class="hint">o edítala y di la tuya</p>':'<p class="hint">🙈 Sin pistas: invéntate una y escríbela (nadie la ve hasta el final)</p>'}</div>`;
 const readPhrase=()=>{const v=$('#ph').value.trim();if(!v){$('#ph').focus();$('#ph').placeholder='¡Escribe la frase que has dicho!';return null}return v};
