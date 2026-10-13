@@ -1,0 +1,17 @@
+{
+  "name": "Patrás",
+  "short_name": "Patrás",
+  "description": "Graba una frase, dale la vuelta, imítala y adivina. Juego de fiesta gratis, en un móvil u online.",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#140a1e",
+  "theme_color": "#140a1e",
+  "lang": "es",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}

@@ -5,6 +5,14 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Patrás</title>
 <meta name="description" content="Graba una frase, dale la vuelta, imítala y adivina. Juego de fiesta gratis, en un móvil u online.">
+<meta name="theme-color" content="#140a1e">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Patrás">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
 <style>
 :root{--bg:#140a1e;--bg2:#3a1a0a;--fg:#fff;--muted:#c9bfd6;--accent:#ff7a00;--accent2:#9dff3a;--card:rgba(255,255,255,.08);--line:rgba(255,255,255,.18);--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--r:22px}
@@ -168,9 +176,17 @@ function home(){
  ${themePicker()}
  <div class="row"><button class="btn primary" id="local">📱 Un móvil</button><button class="btn alt" id="online">🌐 Online</button></div>
  <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un móvil:</b> os lo vais pasando. <b>Online:</b> cada uno en su móvil, con un código o un enlace de sala.</p></details>
+ <button class="btn" id="install" style="display:none">📲 Instalar la app</button><p class="hint" id="ios" style="display:none">📲 Para instalarla en iPhone: botón <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>.</p>
  <footer>Gratis y sin servidor · de 3 a 10 jugadores en un móvil, desde 2 online</footer>`;
  bindThemes(home);$('#local').onclick=localSetup;$('#online').onclick=()=>onlineHome();
+ showInstall();if(/iphone|ipad|ipod/i.test(navigator.userAgent)&&!standalone())$('#ios').style.display='block';
 }
+/* ---------- PWA: instalar y funcionar sin conexión ---------- */
+const standalone=()=>matchMedia('(display-mode: standalone)').matches||navigator.standalone===true;
+let installEvt=null;
+const showInstall=()=>{const b=$('#install');if(!b||!installEvt||standalone())return;b.style.display='block';b.onclick=async()=>{installEvt.prompt();await installEvt.userChoice;installEvt=null;b.style.display='none'}};
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;showInstall()});
+if('serviceWorker'in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))navigator.serviceWorker.register('sw.js');
 function localSetup(){
  app.innerHTML=`<h1>📱 Un móvil</h1>
  <section class="card"><h2 id="pcount">👥 Jugadores</h2><div class="players" id="plist"></div><form class="add" id="padd"><input id="pname" placeholder="Nombre" maxlength="14" autocomplete="off"><button class="btn primary" style="width:auto;margin:0;padding:12px 18px">＋</button></form><p class="hint">Mínimo ${MIN} jugadores, máximo ${MAX}.</p></section>

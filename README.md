@@ -9,6 +9,7 @@ Un solo archivo HTML, sin servidor propio, sin cuentas, gratis.
 - **Online:** cada uno en su móvil, desde 2 jugadores. Uno crea la sala y comparte el enlace o el código de 4 letras. El audio viaja directo entre móviles por WebRTC (PeerJS, señalización pública gratuita). Si un jugador pierde la conexión o recarga, vuelve a entrar solo.
 - Cuenta atrás 3-2-1 al grabar y tope de 5 segundos.
 - 5 categorías de frases (cotidianas, refranes, pelis y series, canciones, absurdas) o modo **sin pistas**: cada uno inventa su frase y la escribe en secreto.
+- **Instalable** como app (PWA): botón "Instalar la app" en Android y Chrome; en iPhone, Compartir → Añadir a pantalla de inicio. Abre también sin conexión.
 - Marcador con podio y confeti. 11 skins: Halloween, Navidad, Neón, Arcade, Océano, Espacio, Bosque, Kawaii, Playa, Fiesta, Pirata.
 
 ## Publicar tu propia copia en GitHub Pages
