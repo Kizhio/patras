@@ -243,6 +243,15 @@ function recorderUI(done){ // cuenta atrás 3-2-1, tope de MAXSEC segundos, toca
  btn.onclick=async()=>{if(rec)return stop();if(busy)return;busy=true;try{for(const n of[3,2,1]){btn.textContent=n;st.textContent='Prepárate…';await sleep(600)}await startRec(cv);btn.classList.add('on');btn.textContent='⏹';let left=MAXSEC;st.textContent=`Grabando… ${left} s (toca para parar)`;tick=setInterval(()=>{left--;st.textContent=`Grabando… ${left} s (toca para parar)`},1000);timer=setTimeout(stop,MAXSEC*1000)}catch(e){fail(e)}finally{busy=false}};
  return cv;
 }
+// Pide el micrófono al empezar (con gesto del usuario); si se deniega, explica cómo activarlo y deja reintentar
+async function micGate(next){
+ try{const st=await navigator.mediaDevices.getUserMedia({audio:true});st.getTracks().forEach(t=>t.stop());return next()}
+ catch(e){const noDev=/NotFound|Devices/i.test(e.name||'');
+  app.innerHTML=`<div class="center"><p class="big">🎤</p><h2>${noDev?'No encuentro ningún micrófono':'Necesito el micrófono'}</h2><p class="hint">${noDev?'Este dispositivo no tiene micrófono disponible o está ocupado por otra app.':'Sin micrófono no se puede grabar ni imitar. Cuando el navegador lo pregunte, pulsa <b>Permitir</b>.'}</p>
+  <div class="card" style="text-align:left"><b>Si no te vuelve a preguntar:</b><ul style="margin:8px 0 0;padding-left:20px"><li><b>Android / Chrome:</b> toca el candado 🔒 junto a la dirección → Permisos → Micrófono → Permitir.</li><li><b>iPhone:</b> Ajustes → Safari → Micrófono → Permitir. Si la app está instalada: Ajustes → Patrás → Micrófono.</li></ul></div>
+  <button class="btn primary" id="retry">🔁 Volver a intentarlo</button><button class="link" id="skip">Seguir sin probar ahora</button></div>`;
+  $('#retry').onclick=()=>micGate(next);$('#skip').onclick=next}
+}
 const recordBlock=hint=>`<canvas id="wave"></canvas><div class="rec" id="rec">🎙️</div><p class="hint" id="status">${hint}</p>`;
 const phraseBox=(pistas,phrase)=>`<div class="card"><input class="phrase" id="ph" maxlength="60" autocomplete="off" value="${pistas?esc(phrase):''}" placeholder="${pistas?'Tu frase':'Escribe tu frase en secreto…'}">${pistas?'<button class="link" id="other">🔀 Otra frase sugerida</button><p class="hint">o edítala y di la tuya</p>':'<p class="hint">🙈 Sin pistas: invéntate una y escríbela (nadie la ve hasta el final)</p>'}</div>`;
 const readPhrase=()=>{const v=$('#ph').value.trim();if(!v){$('#ph').focus();$('#ph').placeholder='¡Escribe la frase que has dicho!';return null}return v};
@@ -277,7 +286,7 @@ function localSetup(){
  <button class="btn primary" id="start">Jugar ▶</button><button class="link" id="back">← Volver</button>`;
  const list=$('#plist');const draw=()=>{$('#pcount').textContent=`👥 Jugadores (${S.players.length}/${MAX})`;list.innerHTML=S.players.map((p,i)=>`<span class="chip">${esc(p)}<b data-i="${i}">✕</b></span>`).join('')||'<span class="hint">Añade jugadores…</span>';list.querySelectorAll('b').forEach(b=>b.onclick=()=>{S.players.splice(+b.dataset.i,1);save();localSetup()});$('#start').disabled=S.players.length<MIN;$('#padd').style.display=S.players.length>=MAX?'none':'flex'};draw();
  $('#padd').onsubmit=e=>{e.preventDefault();const v=$('#pname').value.trim();if(!v||S.players.length>=MAX)return;if(!S.players.some(p=>p.toLowerCase()===v.toLowerCase()))S.players.push(v);$('#pname').value='';save();draw()};
- bindOpts(OPTS);$('#start').onclick=()=>{localStorage.setItem('opts',JSON.stringify(OPTS));startGame()};$('#back').onclick=home;
+ bindOpts(OPTS);$('#start').onclick=()=>{localStorage.setItem('opts',JSON.stringify(OPTS));micGate(startGame)};$('#back').onclick=home;
 }
 const save=()=>localStorage.setItem('players',JSON.stringify(S.players));
 
@@ -344,8 +353,8 @@ function onlineHome(code=''){
  <div class="card"><form class="add" id="joinf"><input id="code" placeholder="CÓDIGO" maxlength="4" autocomplete="off" value="${esc(code)}" style="text-transform:uppercase;letter-spacing:.2em"><button class="btn alt" style="width:auto;margin:0">Unirse</button></form></div>
  <p id="st"></p><button class="link" id="back">← Volver</button>`;
  const me=()=>{const v=$('#me').value.trim();if(!v){status('Pon tu nombre');return null}localStorage.setItem('me',v);return v};
- const h=$('#host');if(h)h.onclick=()=>{const m=me();if(m)hostRoom(m)};
- $('#joinf').onsubmit=e=>{e.preventDefault();const m=me(),c=$('#code').value.trim().toUpperCase();if(m&&c.length===4)joinRoom(m,c)};
+ const h=$('#host');if(h)h.onclick=()=>{const m=me();if(m)micGate(()=>hostRoom(m))};
+ $('#joinf').onsubmit=e=>{e.preventDefault();const m=me(),c=$('#code').value.trim().toUpperCase();if(m&&c.length===4)micGate(()=>joinRoom(m,c))};
  $('#back').onclick=home;if(code)$('#me').focus();
 }
 function waitScreen(icon,msg){app.innerHTML=`<div class="center"><p class="big">${icon}</p><h2>${msg}</h2><p class="hint"><span class="spin">⏳</span> Mientras tanto, nada de trampas…</p></div>`}
