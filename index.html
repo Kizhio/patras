@@ -61,6 +61,9 @@ body{font-family:var(--font);color:var(--fg);background:linear-gradient(160deg,v
 [data-theme=playa] #hero{animation:spin 40s linear infinite}
 [data-theme=fiesta] #hero{animation:spin 6s linear infinite}
 [data-theme=espacio] #hero{animation:bob 10s ease-in-out infinite}
+#homebtn{position:fixed;top:10px;left:10px;z-index:20;width:44px;height:44px;border-radius:50%;border:1px solid var(--line);background:var(--card);backdrop-filter:blur(8px);font-size:1.3rem;cursor:pointer;display:grid;place-items:center;box-shadow:0 4px 14px -4px #000}
+#homebtn[hidden]{display:none}
+body.ingame #app{padding-top:60px}
 #wipe{position:fixed;left:50%;top:50%;width:20px;height:20px;border-radius:50%;transform:translate(-50%,-50%) scale(0);z-index:50;pointer-events:none;background:var(--accent)}
 #wipe.go{animation:wipe .8s ease-out forwards}
 @keyframes wipe{0%{transform:translate(-50%,-50%) scale(0);opacity:.95}60%{opacity:.7}100%{transform:translate(-50%,-50%) scale(200);opacity:0}}
@@ -150,6 +153,7 @@ footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:20px}
 <body>
 <div id="bg"></div><div id="fx"></div><div id="hero"></div><div id="wipe"></div>
 <div id="confetti"></div>
+<button id="homebtn" hidden title="Volver al inicio">🏠</button>
 <main id="app"></main>
 <script>
 // n nombre · e emojis flotantes · h personaje · fx efecto de fondo · d descripción
@@ -444,6 +448,17 @@ function renderOnline(){
   app.innerHTML=`<div class="center"><p class="big">🏆</p><h2>Gana</h2><h1>${esc(w[0])}</h1></div><div class="card">${scoreTable(G.scores)}</div>${H?`<button class="btn primary" id="again">🔁 Otra partida</button>`:''}${back}`;
   animateBars();bindBack();if(H)$('#again').onclick=()=>send({t:'again'})}
 }
+
+/* ---------- botón de inicio (todas las pantallas menos el inicio) ---------- */
+function leave(){
+ const inGame=!!N||(S.total>0&&S.turn<S.total);
+ if(inGame&&!confirm(N&&N.host?'Eres el anfitrión: si sales, la sala se cierra para todos. ¿Volver al inicio?':'Se perderá la partida en curso. ¿Volver al inicio?'))return;
+ if(N){const p=N.peer;N=null;sessionStorage.removeItem('room');p.destroy()}
+ if(rec){rec.stop().catch(()=>{});rec=null}if(playing){try{playing.stop()}catch(e){}}
+ S.total=0;home();
+}
+$('#homebtn').onclick=leave;
+new MutationObserver(()=>{const isHome=!!app.querySelector('.logoimg');$('#homebtn').hidden=isHome;document.body.classList.toggle('ingame',!isHome)}).observe(app,{childList:true});
 
 /* ---------- arranque ---------- */
 setTheme(THEMES[localStorage.getItem('theme')]?localStorage.getItem('theme'):'halloween');
