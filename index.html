@@ -98,7 +98,7 @@ const THEMES={
  pirata:{n:'Pirata',e:['🏴‍☠️','⚓','🦜','💰','🗺️']}
 };
 const PHRASES=['Me gusta el chocolate','Hoy llueve en Madrid','El perro salta la valla','Tengo hambre de pizza','Hasta la vista, baby','Que la fuerza te acompañe','Mi abuela baila salsa','El gato duerme en el sofá','Vamos a la playa','No me gustan los lunes','La vida es bella','Dame un abrazo','Pásame la sal','El sol brilla mucho','Quiero un helado de fresa','Mañana es fiesta','Esto es una locura','Feliz cumpleaños','Buenas noches a todos','Tengo frío en los pies','Apaga la luz','El tren llega tarde','Me duele la cabeza','Cántame una canción','Dónde está mi móvil','Hoy cocino yo','Abre la ventana','Es hora de dormir','Vamos al cine','Qué calor hace','Me encanta este juego','Pon música fuerte','Hola, qué tal','Un café con leche','La pelota es roja','Corre que nos vamos','Tengo sueño','Mira qué bonito','Nos vemos luego','Sube el volumen'];
-const MAX=10,MIN=3;
+const MAX=10,MIN=3,MIN_ON=2;
 const $=s=>document.querySelector(s),app=$('#app');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rand=a=>a[Math.floor(Math.random()*a.length)];
@@ -207,7 +207,7 @@ let N=null; // {me, host, peer, conns:Map, hostConn, G:estado compartido, A:{ori
 const mkCode=()=>Array.from({length:4},()=>rand([...'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'])).join('');
 const status=m=>{const s=$('#st');if(s)s.innerHTML=`<span class="err">${esc(m)}</span>`};
 function onlineHome(){
- app.innerHTML=`<h1>🌐 Online</h1><p class="hint">Cada uno en su móvil. Uno crea la sala y comparte el código.</p>
+ app.innerHTML=`<h1>🌐 Online</h1><p class="hint">Cada uno en su móvil, desde 2 jugadores. Uno crea la sala y comparte el código.</p>
  <div class="card"><input id="me" placeholder="Tu nombre" maxlength="14" autocomplete="off" value="${esc(localStorage.getItem('me')||'')}"></div>
  <button class="btn primary" id="host">➕ Crear sala</button>
  <div class="card"><form class="add" id="joinf"><input id="code" placeholder="CÓDIGO" maxlength="4" autocomplete="off" style="text-transform:uppercase;letter-spacing:.2em"><button class="btn alt" style="width:auto;margin:0">Unirse</button></form></div>
@@ -257,7 +257,7 @@ function renderOnline(){
  if(G.phase==='lobby'){
   app.innerHTML=`<h1>🌐 Sala</h1><div class="code">${G.code}</div><p class="hint">Comparte el código. Jugadores: ${G.players.length}/${MAX}</p>
   <div class="card"><div class="players">${G.players.map(p=>`<span class="chip">${esc(p)}${p===me?' (tú)':''}</span>`).join('')}</div></div>
-  ${H?`<div class="card"><h2>🔁 Vueltas</h2><select id="vueltas">${[1,2,3].map(n=>`<option value="${n}" ${n===G.vueltas?'selected':''}>${n} vuelta${n>1?'s':''}</option>`).join('')}</select></div><button class="btn primary" id="start" ${G.players.length<MIN?'disabled':''}>Empezar ▶ ${G.players.length<MIN?'(mínimo '+MIN+')':''}</button>`:'<p class="hint"><span class="spin">⏳</span> Esperando a que el anfitrión empiece…</p>'}
+  ${H?`<div class="card"><h2>🔁 Vueltas</h2><select id="vueltas">${[1,2,3].map(n=>`<option value="${n}" ${n===G.vueltas?'selected':''}>${n} vuelta${n>1?'s':''}</option>`).join('')}</select></div><button class="btn primary" id="start" ${G.players.length<MIN_ON?"disabled":""}>Empezar ▶ ${G.players.length<MIN_ON?"(mínimo "+MIN_ON+")":""}</button>`:'<p class="hint"><span class="spin">⏳</span> Esperando a que el anfitrión empiece…</p>'}
   ${themePicker()}${back}`;
   bindThemes(renderOnline);bindBack();if(H){$('#vueltas').onchange=e=>G.vueltas=+e.target.value;$('#start').onclick=()=>send({t:'start',vueltas:G.vueltas})}
   return}
@@ -286,7 +286,7 @@ function renderOnline(){
   const list=G.guesses.length?G.guesses.map(g=>`<div><b>${esc(g.name)}:</b> ${esc(g.text)}</div>`).join(''):'<p class="hint">Aún no hay respuestas…</p>';
   app.innerHTML=`${th}<h1>🔊 Momento de la verdad</h1><p class="hint">La imitación de ${esc(G.imi)}, <b>dada la vuelta</b>.</p><canvas id="wave"></canvas><button class="btn primary" id="p1">🔁 Reproducir</button>
   ${isRec?`<div class="card"><div class="phrase">${esc(G.phrase)}</div><p class="hint">Tu frase (si dijiste otra, tú decides). Marca quién acertó:</p><div class="guess">${G.guesses.map(g=>`<label><input type="checkbox" value="${esc(g.name)}"><span>${esc(g.name)} <small>«${esc(g.text)}»</small></span></label>`).join('')||'<p class="hint">Esperando respuestas…</p>'}</div><button class="btn alt" id="mark">Puntuar ▶</button></div>`
-   :isImi?`<div class="card"><h2>Respuestas</h2>${list}</div><p class="hint">Tú no adivinas, ¡ya has hecho bastante! 😄</p>`
+   :isImi&&G.players.length>2?`<div class="card"><h2>Respuestas</h2>${list}</div><p class="hint">Tú no adivinas, ¡ya has hecho bastante! 😄</p>`
    :`<div class="card"><h2>¿Qué frase era?</h2>${mine?`<p>Tu respuesta: <b>${esc(mine.text)}</b></p>`:`<form class="add" id="gf"><input id="gt" placeholder="Escribe tu respuesta" maxlength="60" autocomplete="off"><button class="btn primary" style="width:auto;margin:0">➤</button></form>`}${list}</div>`}`;
   const cv=$('#wave');drawWave(cv,ri);$('#p1').onclick=()=>play(ri,cv);
   const gf=$('#gf');if(gf)gf.onsubmit=e=>{e.preventDefault();const t=$('#gt').value.trim();if(t)send({t:'guess',text:t})};
