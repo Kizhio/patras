@@ -44,18 +44,25 @@ h1{font-size:2.2rem}
 .theme.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent2)}
 .players{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
 .chip{background:var(--accent);color:#000;border-radius:999px;padding:6px 12px;font-weight:700;display:flex;gap:6px;align-items:center}
+.chip.off{opacity:.45}
 .chip b{cursor:pointer;opacity:.6}
 form.add{display:flex;gap:8px}
 input,select{font:inherit;font-size:1rem;padding:12px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.12);color:var(--fg);flex:1;min-width:0;width:100%}
 input::placeholder{color:var(--muted)}
 select{background:var(--card)}
 select option{color:#000}
+.opt{display:flex;align-items:center;gap:10px;margin:10px 0;font-weight:700}
+.opt select{flex:1;width:auto}
+.opt input[type=checkbox]{width:24px;height:24px;flex:none;accent-color:var(--accent)}
+.opt small{font-weight:400;color:var(--muted)}
 .center{text-align:center;padding-top:6vh}
 .big{font-size:5rem;margin:0}
 .code{font-size:3rem;letter-spacing:.3em;font-weight:900;text-align:center;color:var(--accent2);margin:6px 0}
+.url{text-align:center;color:var(--muted);font-size:.85rem;word-break:break-all}
 .phrase{font-size:1.5rem;font-weight:800;text-align:center;padding:14px;border-radius:16px;background:rgba(0,0,0,.25);border:2px dashed var(--accent2)}
+input.phrase{font-size:1.25rem;color:var(--fg)}
 canvas{width:100%;height:110px;display:block;border-radius:16px;background:rgba(0,0,0,.2)}
-.rec{width:110px;height:110px;border-radius:50%;margin:14px auto;display:grid;place-items:center;font-size:2.6rem;border:6px solid var(--accent2);background:var(--accent);cursor:pointer;transition:all .2s}
+.rec{width:110px;height:110px;border-radius:50%;margin:14px auto;display:grid;place-items:center;font-size:2.6rem;font-weight:900;color:#000;border:6px solid var(--accent2);background:var(--accent);cursor:pointer;transition:all .2s;user-select:none}
 .rec.on{animation:pulse 1s infinite;background:#e3002b;border-color:#fff}
 @keyframes pulse{0%{box-shadow:0 0 0 0 rgba(227,0,43,.7)}100%{box-shadow:0 0 0 26px rgba(227,0,43,0)}}
 .hint{color:var(--muted);text-align:center;font-size:.95rem}
@@ -97,18 +104,33 @@ const THEMES={
  fiesta:{n:'Fiesta',e:['🎉','🎊','🪩','🎈','🥳']},
  pirata:{n:'Pirata',e:['🏴‍☠️','⚓','🦜','💰','🗺️']}
 };
-const PHRASES=['Me gusta el chocolate','Hoy llueve en Madrid','El perro salta la valla','Tengo hambre de pizza','Hasta la vista, baby','Que la fuerza te acompañe','Mi abuela baila salsa','El gato duerme en el sofá','Vamos a la playa','No me gustan los lunes','La vida es bella','Dame un abrazo','Pásame la sal','El sol brilla mucho','Quiero un helado de fresa','Mañana es fiesta','Esto es una locura','Feliz cumpleaños','Buenas noches a todos','Tengo frío en los pies','Apaga la luz','El tren llega tarde','Me duele la cabeza','Cántame una canción','Dónde está mi móvil','Hoy cocino yo','Abre la ventana','Es hora de dormir','Vamos al cine','Qué calor hace','Me encanta este juego','Pon música fuerte','Hola, qué tal','Un café con leche','La pelota es roja','Corre que nos vamos','Tengo sueño','Mira qué bonito','Nos vemos luego','Sube el volumen'];
-const MAX=10,MIN=3,MIN_ON=2;
+const PHRASES={
+ 'Cotidianas':['Me gusta el chocolate','Hoy llueve en Madrid','El perro salta la valla','Tengo hambre de pizza','Mi abuela baila salsa','El gato duerme en el sofá','Vamos a la playa','No me gustan los lunes','Dame un abrazo','Pásame la sal','El sol brilla mucho','Quiero un helado de fresa','Mañana es fiesta','Esto es una locura','Feliz cumpleaños','Buenas noches a todos','Tengo frío en los pies','Apaga la luz','El tren llega tarde','Me duele la cabeza','Cántame una canción','Dónde está mi móvil','Hoy cocino yo','Abre la ventana','Es hora de dormir','Vamos al cine','Qué calor hace','Me encanta este juego','Pon música fuerte','Hola, qué tal','Un café con leche','La pelota es roja','Corre que nos vamos','Tengo sueño','Mira qué bonito','Nos vemos luego','Sube el volumen'],
+ 'Refranes':['Más vale pájaro en mano','A quien madruga, Dios le ayuda','No hay mal que por bien no venga','Perro ladrador, poco mordedor','En boca cerrada no entran moscas','Dime con quién andas','A caballo regalado no le mires el diente','Ojos que no ven, corazón que no siente','Más vale tarde que nunca','El que ríe el último ríe mejor','Quien mucho abarca poco aprieta','Cría cuervos','No por mucho madrugar amanece más temprano','Donde fueres haz lo que vieres','Al mal tiempo, buena cara','Cada loco con su tema','Tanto va el cántaro a la fuente','El hábito no hace al monje','Zapatero a tus zapatos','A falta de pan, buenas son tortas'],
+ 'Pelis y series':['Que la fuerza te acompañe','Hasta la vista, baby','Sayonara, baby','Yo soy tu padre','Se acerca el invierno','Houston, tenemos un problema','Mi tesoro','Soy el rey del mundo','Siempre nos quedará París','Bond, James Bond','Hakuna matata','Hasta el infinito y más allá','Elemental, querido Watson','Un gran poder conlleva una gran responsabilidad','Volveré','La vida es como una caja de bombones','Yo no soy un bicho raro','Nadie pone a Baby en un rincón','Mi nombre es Íñigo Montoya','Sois todos unos mentirosos'],
+ 'Canciones':['Despacito','La Macarena','Bailando','Vivir mi vida','Waka waka','Color esperanza','Me gustas tú','La bicicleta','Gasolina','Aserejé','Bamboleo','Corazón partío','Mi gran noche','Sarandonga','La camisa negra','Danza kuduro','Rayando el sol','Lo malo','Ella baila sola','Un rayo de sol'],
+ 'Absurdas':['El pulpo toca la guitarra','Mi vecino es un dinosaurio','Las nubes saben a fresa','Un pingüino con bufanda','El lunes huele a queso','Mi abuela conduce un tanque','El sofá tiene hambre','Hoy llueven croquetas','Un tiburón en la bañera','El gato habla francés','La luna es de chocolate','Mi perro juega al ajedrez','Las zanahorias cantan ópera','Un fantasma con resfriado','El wifi está de vacaciones','Mi tostadora tiene novio','Un koala en el metro','El lavavajillas baila flamenco','Tengo un dragón en el garaje','Las patatas quieren votar']
+};
+const pick=cat=>rand(PHRASES[cat]||Object.values(PHRASES).flat());
+const MAX=10,MIN=3,MIN_ON=2,MAXSEC=5;
 const $=s=>document.querySelector(s),app=$('#app');
 const esc=s=>String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const rand=a=>a[Math.floor(Math.random()*a.length)];
-let S={players:JSON.parse(localStorage.getItem('players')||'[]'),vueltas:1,turn:0,total:0,scores:{},orig:null,imit:null,phrase:''};
+const OPTS=Object.assign({vueltas:1,cat:'',pistas:true},JSON.parse(localStorage.getItem('opts')||'{}'));
+let S={players:JSON.parse(localStorage.getItem('players')||'[]'),turn:0,total:0,scores:{},orig:null,imit:null,phrase:''};
 
 /* ---------- tema ---------- */
 function setTheme(t){document.body.dataset.theme=t;localStorage.setItem('theme',t);const bg=$('#bg');bg.innerHTML='';const e=THEMES[t].e;for(let i=0;i<16;i++){const s=document.createElement('span');s.textContent=e[i%e.length];s.style.left=Math.random()*100+'%';s.style.animationDelay=-Math.random()*16+'s';s.style.animationDuration=12+Math.random()*10+'s';s.style.fontSize=18+Math.random()*30+'px';bg.appendChild(s)}}
 function confetti(){const e=THEMES[document.body.dataset.theme].e,c=$('#confetti');c.innerHTML='';for(let i=0;i<70;i++){const s=document.createElement('span');s.textContent=rand(e);s.style.left=Math.random()*100+'%';s.style.animationDelay=Math.random()*1.5+'s';s.style.fontSize=16+Math.random()*24+'px';c.appendChild(s)}setTimeout(()=>c.innerHTML='',5000)}
 const themePicker=()=>`<section class="card"><h2>🎨 Skin</h2><div class="themes">${Object.entries(THEMES).map(([k,v])=>`<button class="theme ${k===document.body.dataset.theme?'on':''}" data-theme="${k}" data-t="${k}"><span>${v.e[0]}</span>${v.n}</button>`).join('')}</div></section>`;
 const bindThemes=re=>document.querySelectorAll('.theme').forEach(b=>b.onclick=()=>{setTheme(b.dataset.t);re()});
+
+/* ---------- opciones (compartidas por ambos modos) ---------- */
+const optsUI=o=>`<section class="card"><h2>⚙️ Opciones</h2>
+ <label class="opt">🔁 <select id="vueltas">${[1,2,3].map(n=>`<option value="${n}" ${n===o.vueltas?'selected':''}>${n} vuelta${n>1?'s':''} (cada uno graba ${n} vez${n>1?'es':''})</option>`).join('')}</select></label>
+ <label class="opt">📚 <select id="cat"><option value="">Todas las frases</option>${Object.keys(PHRASES).map(c=>`<option ${c===o.cat?'selected':''}>${c}</option>`).join('')}</select></label>
+ <label class="opt"><input type="checkbox" id="pistas" ${o.pistas?'checked':''}> <span>💡 Frases sugeridas <small>· desmarca para jugar <b>sin pistas</b>: cada uno inventa y escribe su frase en secreto</small></span></label></section>`;
+const bindOpts=o=>{$('#vueltas').onchange=e=>o.vueltas=+e.target.value;$('#cat').onchange=e=>o.cat=e.target.value;$('#pistas').onchange=e=>o.pistas=e.target.checked};
 
 /* ---------- audio ---------- */
 let AC,playing=null,rec=null;
@@ -122,12 +144,18 @@ function drawLive(cv,data){const g=bars(cv),N=60,step=Math.floor(data.length/N),
 async function startRec(cv){const stream=await navigator.mediaDevices.getUserMedia({audio:true});const ctx=ac(),mr=new MediaRecorder(stream),chunks=[];mr.ondataavailable=e=>chunks.push(e.data);const src=ctx.createMediaStreamSource(stream),an=ctx.createAnalyser();an.fftSize=512;src.connect(an);const data=new Uint8Array(an.fftSize);let raf;const draw=()=>{an.getByteTimeDomainData(data);drawLive(cv,data);raf=requestAnimationFrame(draw)};draw();mr.start();
  rec={stop:()=>new Promise((res,rej)=>{mr.onstop=async()=>{cancelAnimationFrame(raf);stream.getTracks().forEach(t=>t.stop());src.disconnect();try{res(await ctx.decodeAudioData(await new Blob(chunks,{type:mr.mimeType}).arrayBuffer()))}catch(e){rej(e)}};mr.stop()})}}
 function play(buf,cv){return new Promise(res=>{const ctx=ac();if(playing){try{playing.stop()}catch(e){}}const s=ctx.createBufferSource();s.buffer=buf;s.connect(ctx.destination);const t0=ctx.currentTime;playing=s;let raf;const tick=()=>{drawWave(cv,buf,(ctx.currentTime-t0)/buf.duration);raf=requestAnimationFrame(tick)};tick();s.onended=()=>{cancelAnimationFrame(raf);drawWave(cv,buf,1);if(playing===s)playing=null;res()};s.start()})}
-function recorderUI(done){
- const cv=$('#wave'),btn=$('#rec'),st=$('#status');
- btn.onclick=async()=>{try{if(!rec){await startRec(cv);btn.classList.add('on');btn.textContent='⏹';st.textContent='Grabando… toca para parar'}else{const buf=await rec.stop();rec=null;btn.classList.remove('on');btn.textContent='🎙️';if(buf.duration<.4){st.textContent='Muy corto, prueba otra vez';return}drawWave(cv,buf);st.textContent=buf.duration.toFixed(1)+' s grabados';done(buf)}}catch(e){rec=null;btn.classList.remove('on');st.innerHTML=`<span class="err">No puedo usar el micrófono. Permite el acceso y abre la página por HTTPS. (${esc(e.message||e)})</span>`}};
+const sleep=ms=>new Promise(r=>setTimeout(r,ms));
+function recorderUI(done){ // cuenta atrás 3-2-1, tope de MAXSEC segundos, toca para parar antes
+ const cv=$('#wave'),btn=$('#rec'),st=$('#status');let timer,tick,busy=false;
+ const reset=()=>{clearTimeout(timer);clearInterval(tick);btn.classList.remove('on');btn.textContent='🎙️'};
+ const fail=e=>{rec=null;reset();st.innerHTML=`<span class="err">No puedo usar el micrófono. Permite el acceso y abre la página por HTTPS. (${esc(e.message||e)})</span>`};
+ const stop=async()=>{if(!rec)return;const r=rec;rec=null;reset();try{const buf=await r.stop();if(buf.duration<.4){st.textContent='Muy corto, prueba otra vez';return}drawWave(cv,buf);st.textContent=buf.duration.toFixed(1)+' s grabados';done(buf)}catch(e){fail(e)}};
+ btn.onclick=async()=>{if(rec)return stop();if(busy)return;busy=true;try{for(const n of[3,2,1]){btn.textContent=n;st.textContent='Prepárate…';await sleep(600)}await startRec(cv);btn.classList.add('on');btn.textContent='⏹';let left=MAXSEC;st.textContent=`Grabando… ${left} s (toca para parar)`;tick=setInterval(()=>{left--;st.textContent=`Grabando… ${left} s (toca para parar)`},1000);timer=setTimeout(stop,MAXSEC*1000)}catch(e){fail(e)}finally{busy=false}};
  return cv;
 }
-const recordBlock=(hint)=>`<canvas id="wave"></canvas><div class="rec" id="rec">🎙️</div><p class="hint" id="status">${hint}</p>`;
+const recordBlock=hint=>`<canvas id="wave"></canvas><div class="rec" id="rec">🎙️</div><p class="hint" id="status">${hint}</p>`;
+const phraseBox=(pistas,phrase)=>`<div class="card"><input class="phrase" id="ph" maxlength="60" autocomplete="off" value="${pistas?esc(phrase):''}" placeholder="${pistas?'Tu frase':'Escribe tu frase en secreto…'}">${pistas?'<button class="link" id="other">🔀 Otra frase sugerida</button><p class="hint">o edítala y di la tuya</p>':'<p class="hint">🙈 Sin pistas: invéntate una y escríbela (nadie la ve hasta el final)</p>'}</div>`;
+const readPhrase=()=>{const v=$('#ph').value.trim();if(!v){$('#ph').focus();$('#ph').placeholder='¡Escribe la frase que has dicho!';return null}return v};
 
 /* ---------- marcador ---------- */
 function scoreTable(scores){const max=Math.max(1,...Object.values(scores));return Object.entries(scores).sort((a,b)=>b[1]-a[1]).map(([p,s],i)=>`<div class="score"><span class="name">${['🥇','🥈','🥉'][i]||'▪️'} ${esc(p)}</span><div class="bar"><i style="width:0" data-w="${s/max*100}"></i></div><span class="pts">${s}</span></div>`).join('')}
@@ -139,35 +167,34 @@ function home(){
  app.innerHTML=`<h1 class="logo">⏪ Patrás</h1><p class="tag">Graba. Dale la vuelta. Imita. Adivina.</p>
  ${themePicker()}
  <div class="row"><button class="btn primary" id="local">📱 Un móvil</button><button class="btn alt" id="online">🌐 Online</button></div>
- <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un móvil:</b> os lo vais pasando. <b>Online:</b> cada uno en su móvil, con un código de sala.</p></details>
- <footer>Gratis y sin servidor · de 3 a 10 jugadores</footer>`;
- bindThemes(home);$('#local').onclick=localSetup;$('#online').onclick=onlineHome;
+ <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un móvil:</b> os lo vais pasando. <b>Online:</b> cada uno en su móvil, con un código o un enlace de sala.</p></details>
+ <footer>Gratis y sin servidor · de 3 a 10 jugadores en un móvil, desde 2 online</footer>`;
+ bindThemes(home);$('#local').onclick=localSetup;$('#online').onclick=()=>onlineHome();
 }
 function localSetup(){
  app.innerHTML=`<h1>📱 Un móvil</h1>
  <section class="card"><h2 id="pcount">👥 Jugadores</h2><div class="players" id="plist"></div><form class="add" id="padd"><input id="pname" placeholder="Nombre" maxlength="14" autocomplete="off"><button class="btn primary" style="width:auto;margin:0;padding:12px 18px">＋</button></form><p class="hint">Mínimo ${MIN} jugadores, máximo ${MAX}.</p></section>
- <section class="card"><h2>🔁 Vueltas</h2><select id="vueltas">${[1,2,3].map(n=>`<option value="${n}" ${n===S.vueltas?'selected':''}>${n} vuelta${n>1?'s':''} (cada uno graba ${n} vez${n>1?'es':''})</option>`).join('')}</select></section>
+ ${optsUI(OPTS)}
  <button class="btn primary" id="start">Jugar ▶</button><button class="link" id="back">← Volver</button>`;
- const list=$("#plist");const draw=()=>{$("#pcount").textContent=`👥 Jugadores (${S.players.length}/${MAX})`;list.innerHTML=S.players.map((p,i)=>`<span class="chip">${esc(p)}<b data-i="${i}">✕</b></span>`).join('')||'<span class="hint">Añade jugadores…</span>';list.querySelectorAll('b').forEach(b=>b.onclick=()=>{S.players.splice(+b.dataset.i,1);save();localSetup()});$('#start').disabled=S.players.length<MIN;$('#padd').style.display=S.players.length>=MAX?'none':'flex'};draw();
+ const list=$('#plist');const draw=()=>{$('#pcount').textContent=`👥 Jugadores (${S.players.length}/${MAX})`;list.innerHTML=S.players.map((p,i)=>`<span class="chip">${esc(p)}<b data-i="${i}">✕</b></span>`).join('')||'<span class="hint">Añade jugadores…</span>';list.querySelectorAll('b').forEach(b=>b.onclick=()=>{S.players.splice(+b.dataset.i,1);save();localSetup()});$('#start').disabled=S.players.length<MIN;$('#padd').style.display=S.players.length>=MAX?'none':'flex'};draw();
  $('#padd').onsubmit=e=>{e.preventDefault();const v=$('#pname').value.trim();if(!v||S.players.length>=MAX)return;if(!S.players.some(p=>p.toLowerCase()===v.toLowerCase()))S.players.push(v);$('#pname').value='';save();draw()};
- $('#vueltas').onchange=e=>S.vueltas=+e.target.value;$('#start').onclick=startGame;$('#back').onclick=home;
+ bindOpts(OPTS);$('#start').onclick=()=>{localStorage.setItem('opts',JSON.stringify(OPTS));startGame()};$('#back').onclick=home;
 }
 const save=()=>localStorage.setItem('players',JSON.stringify(S.players));
 
 /* ---------- modo un móvil ---------- */
-function startGame(){S.turn=0;S.total=S.vueltas*S.players.length;S.scores=Object.fromEntries(S.players.map(p=>[p,0]));nextTurn()}
-function nextTurn(){if(S.turn>=S.total)return final();const n=S.players.length;S.rec=S.players[S.turn%n];S.imi=S.players[(S.turn+1)%n];S.orig=S.imit=null;S.phrase=rand(PHRASES);pass(S.rec,'🎙️ Te toca grabar la frase secreta. ¡Que nadie te oiga!',screenRecord)}
+function startGame(){S.turn=0;S.total=OPTS.vueltas*S.players.length;S.scores=Object.fromEntries(S.players.map(p=>[p,0]));nextTurn()}
+function nextTurn(){if(S.turn>=S.total)return final();const n=S.players.length;S.rec=S.players[S.turn%n];S.imi=S.players[(S.turn+1)%n];S.orig=S.imit=null;S.phrase=pick(OPTS.cat);pass(S.rec,'🎙️ Te toca grabar la frase secreta. ¡Que nadie te oiga!',screenRecord)}
 function pass(name,msg,next){app.innerHTML=`<div class="center"><p class="big">📱</p><h2>Pasa el móvil a</h2><h1>${esc(name)}</h1><p class="hint">${msg}</p><button class="btn primary" id="go">Soy ${esc(name)} ✋</button></div>`;$('#go').onclick=next}
 const hdr=(turn,total,rec,imi)=>`<div class="top"><span>Turno ${turn+1}/${total}</span><span>🎙️ ${esc(rec)} · 🎭 ${esc(imi)}</span></div>`;
 function screenRecord(){
- app.innerHTML=`${hdr(S.turn,S.total,S.rec,S.imi)}<h1>🎙️ Graba tu frase</h1>
- <div class="card"><div class="phrase" id="ph">${esc(S.phrase)}</div><p class="hint"><button class="link" id="other">🔀 Otra frase</button> o invéntate una</p></div>
+ app.innerHTML=`${hdr(S.turn,S.total,S.rec,S.imi)}<h1>🎙️ Graba tu frase</h1>${phraseBox(OPTS.pistas,S.phrase)}
  ${recordBlock('Toca para grabar (2-4 segundos va bien)')}
  <div id="after" style="display:none"><div class="row"><button class="btn" id="pn">▶ Normal</button><button class="btn" id="pr">⏪ Al revés</button></div><button class="btn primary" id="ok">✅ Listo, pasar a ${esc(S.imi)}</button></div>`;
- $('#other').onclick=()=>{S.phrase=rand(PHRASES);$('#ph').textContent=S.phrase};
+ const o=$('#other');if(o)o.onclick=()=>{$('#ph').value=pick(OPTS.cat)};
  const cv=recorderUI(b=>{S.orig=b;$('#after').style.display='block'});
  $('#pn').onclick=()=>play(S.orig,cv);$('#pr').onclick=()=>play(reverse(S.orig),cv);
- $('#ok').onclick=()=>pass(S.imi,'🎭 Escucha la frase al revés e imítala lo mejor que puedas.',screenImitate);
+ $('#ok').onclick=()=>{const p=readPhrase();if(!p)return;S.phrase=p;pass(S.imi,'🎭 Escucha la frase al revés e imítala lo mejor que puedas.',screenImitate)};
 }
 function screenImitate(){
  const rev=reverse(S.orig);
@@ -184,7 +211,7 @@ function screenReveal(){
  app.innerHTML=`${hdr(S.turn,S.total,S.rec,S.imi)}<h1>🔊 Momento de la verdad</h1><p class="hint">Esto es la imitación de ${esc(S.imi)}… <b>dada la vuelta</b>. ¿Qué frase dijo ${esc(S.rec)}?</p>
  <canvas id="wave"></canvas><button class="btn primary" id="p1">🔁 Reproducir</button>
  <div class="card"><h2>¿Quién lo ha adivinado?</h2><div class="guess">${others.map(p=>`<label><input type="checkbox" value="${esc(p)}"><span>${esc(p)}</span></label>`).join('')}</div></div>
- <button class="btn" id="show">👀 Revelar frase original</button><div id="orig" style="display:none" class="card"><div class="phrase">${esc(S.phrase)}</div><p class="hint">(si ${esc(S.rec)} dijo otra cosa, que lo cuente)</p><button class="btn" id="p2">▶ Oír original</button></div>
+ <button class="btn" id="show">👀 Revelar frase original</button><div id="orig" style="display:none" class="card"><div class="phrase">${esc(S.phrase)}</div><button class="btn" id="p2">▶ Oír original</button></div>
  <button class="btn alt" id="next">Puntuar y seguir ▶</button>`;
  const cv=$('#wave'),ri=reverse(S.imit);drawWave(cv,ri);
  $('#p1').onclick=()=>play(ri,cv);$('#show').onclick=()=>{$('#orig').style.display='block';$('#show').style.display='none'};$('#p2').onclick=()=>play(S.orig,cv);
@@ -202,73 +229,94 @@ function final(){
 }
 
 /* ---------- modo online (WebRTC vía PeerJS, sin servidor propio) ---------- */
-// ponytail: sin TURN ni reconexión; si una red muy cerrada no conecta, pasar {config:{iceServers:[...]}} a new Peer
-let N=null; // {me, host, peer, conns:Map, hostConn, G:estado compartido, A:{orig,imit} AudioBuffers}
+// ponytail: sin TURN; si una red muy cerrada no conecta, pasar {config:{iceServers:[...]}} a new Peer.
+// Reconexión: los jugadores reintentan solos y pueden recargar la página; si se cae el ANFITRIÓN la sala se pierde.
+let N=null; // {me, host, peer, conns:Map, hostConn, G:estado compartido, A:{orig,imit} AudioBuffers, P:{orig,imit} PCM crudo (anfitrión)}
 const mkCode=()=>Array.from({length:4},()=>rand([...'ABCDEFGHJKLMNPQRSTUVWXYZ23456789'])).join('');
+const roomURL=c=>location.origin+location.pathname+'?sala='+c;
 const status=m=>{const s=$('#st');if(s)s.innerHTML=`<span class="err">${esc(m)}</span>`};
-function onlineHome(){
- app.innerHTML=`<h1>🌐 Online</h1><p class="hint">Cada uno en su móvil, desde 2 jugadores. Uno crea la sala y comparte el código.</p>
- <div class="card"><input id="me" placeholder="Tu nombre" maxlength="14" autocomplete="off" value="${esc(localStorage.getItem('me')||'')}"></div>
- <button class="btn primary" id="host">➕ Crear sala</button>
- <div class="card"><form class="add" id="joinf"><input id="code" placeholder="CÓDIGO" maxlength="4" autocomplete="off" style="text-transform:uppercase;letter-spacing:.2em"><button class="btn alt" style="width:auto;margin:0">Unirse</button></form></div>
+const errScreen=m=>{sessionStorage.removeItem('room');app.innerHTML=`<p class="err">${esc(m)}</p><button class="link" id="b">← Volver</button>`;$('#b').onclick=()=>onlineHome()};
+function onlineHome(code=''){
+ const saved=localStorage.getItem('me')||'';
+ if(code&&saved)return joinRoom(saved,code);
+ app.innerHTML=`<h1>🌐 Online</h1><p class="hint">Cada uno en su móvil, desde 2 jugadores. Uno crea la sala y comparte el enlace o el código.</p>
+ <div class="card"><input id="me" placeholder="Tu nombre" maxlength="14" autocomplete="off" value="${esc(saved)}"></div>
+ ${code?'':'<button class="btn primary" id="host">➕ Crear sala</button>'}
+ <div class="card"><form class="add" id="joinf"><input id="code" placeholder="CÓDIGO" maxlength="4" autocomplete="off" value="${esc(code)}" style="text-transform:uppercase;letter-spacing:.2em"><button class="btn alt" style="width:auto;margin:0">Unirse</button></form></div>
  <p id="st"></p><button class="link" id="back">← Volver</button>`;
  const me=()=>{const v=$('#me').value.trim();if(!v){status('Pon tu nombre');return null}localStorage.setItem('me',v);return v};
- $('#host').onclick=()=>{const m=me();if(m)hostRoom(m)};
+ const h=$('#host');if(h)h.onclick=()=>{const m=me();if(m)hostRoom(m)};
  $('#joinf').onsubmit=e=>{e.preventDefault();const m=me(),c=$('#code').value.trim().toUpperCase();if(m&&c.length===4)joinRoom(m,c)};
- $('#back').onclick=home;
+ $('#back').onclick=home;if(code)$('#me').focus();
 }
 function waitScreen(icon,msg){app.innerHTML=`<div class="center"><p class="big">${icon}</p><h2>${msg}</h2><p class="hint"><span class="spin">⏳</span> Mientras tanto, nada de trampas…</p></div>`}
 function send(m){N.host?handle(null,m):N.hostConn.send(m)}
 function hostRoom(me){
  const c=mkCode(),peer=new Peer('rebobina-'+c);
- N={me,host:true,peer,conns:new Map(),A:{},G:{phase:'lobby',code:c,players:[me],scores:{},turn:0,total:0,vueltas:1,guesses:[]}};
+ N={me,host:true,peer,conns:new Map(),A:{},P:{},G:{phase:'lobby',code:c,players:[me],scores:{},turn:0,total:0,guesses:[],...OPTS}};
  waitScreen('📡','Creando sala…');
  peer.on('open',()=>renderOnline());
- peer.on('error',e=>e.type==='unavailable-id'?hostRoom(me):(app.innerHTML=`<p class="err">No se pudo crear la sala (${esc(e.type)}). Revisa tu conexión.</p><button class="link" id="b">← Volver</button>`,$('#b').onclick=onlineHome));
- peer.on('connection',conn=>{conn.on('data',m=>handle(conn,m));conn.on('close',()=>{if(conn.name){N.conns.delete(conn.name);if(N.G.phase==='lobby'){N.G.players=N.G.players.filter(p=>p!==conn.name);bcast()}}})});
+ peer.on('disconnected',()=>{if(N&&N.peer===peer)peer.reconnect()});
+ peer.on('error',e=>e.type==='unavailable-id'?hostRoom(me):e.type==='peer-unavailable'?0:errScreen(`No se pudo crear la sala (${e.type}). Revisa tu conexión.`));
+ peer.on('connection',conn=>{conn.on('data',m=>handle(conn,m));conn.on('close',()=>{if(!N||!conn.name||N.conns.get(conn.name)!==conn)return;N.conns.delete(conn.name);if(N.G.phase==='lobby')N.G.players=N.G.players.filter(p=>p!==conn.name);bcast()})});
 }
-function joinRoom(me,c){
- const peer=new Peer();N={me,host:false,peer,A:{},G:null};waitScreen('📡','Conectando a la sala '+c+'…');
+function joinRoom(me,c,retry=0){
+ const peer=new Peer();N={me,host:false,peer,A:{},G:retry?N?.G:null};
+ waitScreen('📡',retry?`Reconectando… (intento ${retry})`:'Conectando a la sala '+c+'…');
+ let done=false;const again=()=>{if(done||!N||N.peer!==peer)return;done=true;peer.destroy();if(retry>=6)return errScreen('No consigo conectar con la sala. ¿Sigue abierta en el móvil del anfitrión?');setTimeout(()=>joinRoom(me,c,retry+1),1500*(retry+1))};
  peer.on('open',()=>{const conn=peer.connect('rebobina-'+c,{reliable:true});N.hostConn=conn;
-  conn.on('open',()=>conn.send({t:'join',name:me}));
-  conn.on('data',m=>{if(m.t==='state'){if(m.G.phase==='record'&&N.G?.phase!=='record')N.A={};N.G=m.G;renderOnline()}else if(m.t==='audio'){N.A[m.kind]=fromPCM(m.data,m.rate);renderOnline()}else if(m.t==='err'){app.innerHTML=`<p class="err">${esc(m.msg)}</p><button class="link" id="b">← Volver</button>`;$('#b').onclick=onlineHome}});
-  conn.on('close',()=>{app.innerHTML=`<p class="err">Se perdió la conexión con la sala.</p><button class="link" id="b">← Volver</button>`;$('#b').onclick=onlineHome})});
- peer.on('error',e=>{app.innerHTML=`<p class="err">No se pudo conectar (${esc(e.type)}). ¿Código correcto?</p><button class="link" id="b">← Volver</button>`;$('#b').onclick=onlineHome});
+  conn.on('open',()=>{conn.send({t:'join',name:me});sessionStorage.setItem('room',JSON.stringify({me,c}));retry=0});
+  conn.on('data',m=>{if(m.t==='state'){if(m.G.phase==='record'&&N.G?.phase!=='record')N.A={};N.G=m.G;renderOnline()}else if(m.t==='audio'){N.A[m.kind]=fromPCM(m.data,m.rate);renderOnline()}else if(m.t==='err'){N=null;peer.destroy();errScreen(m.msg)}});
+  conn.on('close',again);conn.on('error',again)});
+ peer.on('error',e=>e.type==='peer-unavailable'&&!retry?errScreen('No existe ninguna sala con ese código.'):again());
 }
 function bcast(){for(const c of N.conns.values())c.send({t:'state',G:N.G});renderOnline()}
-function sendAudio(kind,to){const m={t:'audio',kind,data:N.P[kind].data,rate:N.P[kind].rate};to?to.send(m):N.conns.forEach(c=>c.send(m))}
-function newTurn(){const G=N.G,n=G.players.length;G.rec=G.players[G.turn%n];G.imi=G.players[(G.turn+1)%n];G.phrase=rand(PHRASES);G.guesses=[];G.phase='record';N.A={};N.P={}}
+function sendAudio(kind,to){if(!N.P[kind]||!to)return;const m={t:'audio',kind,data:N.P[kind].data,rate:N.P[kind].rate};to==='all'?N.conns.forEach(c=>c.send(m)):to.send(m)}
+function newTurn(){const G=N.G,n=G.players.length;G.rec=G.players[G.turn%n];G.imi=G.players[(G.turn+1)%n];G.phrase=pick(G.cat);G.guesses=[];G.phase='record';N.A={};N.P={}}
 function handle(conn,m){ // solo en el anfitrión
  const G=N.G,from=conn?conn.name:N.me;
- if(m.t==='join'){if(G.phase!=='lobby')return conn.send({t:'err',msg:'La partida ya ha empezado'});if(G.players.length>=MAX)return conn.send({t:'err',msg:'Sala llena (10)'});if(G.players.some(p=>p.toLowerCase()===m.name.toLowerCase()))return conn.send({t:'err',msg:'Ese nombre ya está en la sala'});conn.name=m.name;N.conns.set(m.name,conn);G.players.push(m.name);return bcast()}
- if(m.t==='start'){G.vueltas=m.vueltas;G.total=G.vueltas*G.players.length;G.turn=0;G.scores=Object.fromEntries(G.players.map(p=>[p,0]));newTurn();return bcast()}
+ if(m.t==='join'){
+  if(G.phase!=='lobby'){ // reconexión de alguien que ya estaba
+   if(!G.players.includes(m.name))return conn.send({t:'err',msg:'La partida ya ha empezado'});
+   conn.name=m.name;N.conns.set(m.name,conn);conn.send({t:'state',G});
+   if(G.phase==='imitate'&&G.imi===m.name)sendAudio('orig',conn);if(G.phase==='reveal')sendAudio('imit',conn);return renderOnline()}
+  const dup=G.players.find(p=>p.toLowerCase()===m.name.toLowerCase());
+  if(dup===N.me||(dup&&dup!==m.name))return conn.send({t:'err',msg:'Ese nombre ya está en la sala'});
+  if(!dup&&G.players.length>=MAX)return conn.send({t:'err',msg:'Sala llena (10)'});
+  const old=N.conns.get(m.name);if(old&&old!==conn)old.close(); // misma persona volviendo a entrar
+  conn.name=m.name;N.conns.set(m.name,conn);if(!dup)G.players.push(m.name);return bcast()}
+ if(m.t==='start'){Object.assign(G,m.opts);G.total=G.vueltas*G.players.length;G.turn=0;G.scores=Object.fromEntries(G.players.map(p=>[p,0]));newTurn();return bcast()}
  if(m.t==='audio'){N.P[m.kind]={data:m.data,rate:m.rate};N.A[m.kind]=fromPCM(m.data,m.rate);
-  if(m.kind==='orig'){G.phase='imitate';if(G.imi!==N.me)sendAudio('orig',N.conns.get(G.imi))}
-  else{G.phase='reveal';G.guesses=[];sendAudio('imit')}
+  if(m.kind==='orig'){G.phrase=m.phrase||G.phrase;G.phase='imitate';if(G.imi!==N.me)sendAudio('orig',N.conns.get(G.imi))}
+  else{G.phase='reveal';G.guesses=[];sendAudio('imit','all')}
   return bcast()}
  if(m.t==='guess'){if(G.phase==='reveal'&&!G.guesses.some(g=>g.name===from))G.guesses.push({name:from,text:m.text});return bcast()}
  if(m.t==='mark'){if(G.phase!=='reveal')return;applyScores(G.scores,m.correct,G.rec,G.imi);G.hits=m.correct.length;G.turn++;G.phase='score';return bcast()}
  if(m.t==='next'){if(G.turn>=G.total)G.phase='final';else newTurn();return bcast()}
- if(m.t==='again'){G.phase='lobby';return bcast()}
+ if(m.t==='again'){G.phase='lobby';G.players=G.players.filter(p=>p===N.me||N.conns.has(p));return bcast()}
 }
+async function share(url){const text=`Únete a mi sala de Patrás ⏪ ${url}`;if(navigator.share){try{await navigator.share({title:'Patrás',text,url})}catch(e){}return}try{await navigator.clipboard.writeText(url)}catch(e){}window.open('https://wa.me/?text='+encodeURIComponent(text),'_blank')}
 function renderOnline(){
- const G=N.G;if(!G)return;const me=N.me,H=N.host,isRec=me===G.rec,isImi=me===G.imi;
- const back=`<button class="link" id="leave">Salir de la sala</button>`,bindBack=()=>{const b=$('#leave');if(b)b.onclick=()=>{N.peer.destroy();N=null;home()}};
+ const G=N&&N.G;if(!G)return;const me=N.me,H=N.host,isRec=me===G.rec,isImi=me===G.imi;
+ const back=`<button class="link" id="leave">Salir de la sala</button>`,bindBack=()=>{const b=$('#leave');if(b)b.onclick=()=>{const p=N.peer;N=null;sessionStorage.removeItem('room');p.destroy();home()}};
  if(G.phase==='lobby'){
-  app.innerHTML=`<h1>🌐 Sala</h1><div class="code">${G.code}</div><p class="hint">Comparte el código. Jugadores: ${G.players.length}/${MAX}</p>
+  const url=roomURL(G.code);
+  app.innerHTML=`<h1>🌐 Sala</h1><div class="code">${G.code}</div><p class="url">${esc(url)}</p><button class="btn alt" id="share">📲 Compartir enlace</button><p class="hint">Jugadores: ${G.players.length}/${MAX}</p>
   <div class="card"><div class="players">${G.players.map(p=>`<span class="chip">${esc(p)}${p===me?' (tú)':''}</span>`).join('')}</div></div>
-  ${H?`<div class="card"><h2>🔁 Vueltas</h2><select id="vueltas">${[1,2,3].map(n=>`<option value="${n}" ${n===G.vueltas?'selected':''}>${n} vuelta${n>1?'s':''}</option>`).join('')}</select></div><button class="btn primary" id="start" ${G.players.length<MIN_ON?"disabled":""}>Empezar ▶ ${G.players.length<MIN_ON?"(mínimo "+MIN_ON+")":""}</button>`:'<p class="hint"><span class="spin">⏳</span> Esperando a que el anfitrión empiece…</p>'}
+  ${H?`${optsUI(G)}<button class="btn primary" id="start" ${G.players.length<MIN_ON?'disabled':''}>Empezar ▶ ${G.players.length<MIN_ON?'(mínimo '+MIN_ON+')':''}</button>`:'<p class="hint"><span class="spin">⏳</span> Esperando a que el anfitrión empiece…</p>'}
   ${themePicker()}${back}`;
-  bindThemes(renderOnline);bindBack();if(H){$('#vueltas').onchange=e=>G.vueltas=+e.target.value;$('#start').onclick=()=>send({t:'start',vueltas:G.vueltas})}
+  $('#share').onclick=()=>share(url);bindThemes(renderOnline);bindBack();
+  if(H){bindOpts(G);$('#start').onclick=()=>{Object.assign(OPTS,{vueltas:G.vueltas,cat:G.cat,pistas:G.pistas});localStorage.setItem('opts',JSON.stringify(OPTS));send({t:'start',opts:{vueltas:G.vueltas,cat:G.cat,pistas:G.pistas}})}}
   return}
  const th=hdr(G.turn,G.total,G.rec,G.imi);
  if(G.phase==='record'){
   if(!isRec)return waitScreen('🎙️',esc(G.rec)+' está grabando una frase…');
-  app.innerHTML=`${th}<h1>🎙️ Graba tu frase</h1><div class="card"><div class="phrase">${esc(G.phrase)}</div><p class="hint">o invéntate una</p></div>${recordBlock('Toca para grabar (2-4 segundos)')}
+  app.innerHTML=`${th}<h1>🎙️ Graba tu frase</h1>${phraseBox(G.pistas,G.phrase)}${recordBlock('Toca para grabar (2-4 segundos)')}
   <div id="after" style="display:none"><div class="row"><button class="btn" id="pn">▶ Normal</button><button class="btn" id="pr">⏪ Al revés</button></div><button class="btn primary" id="ok">✅ Enviar a ${esc(G.imi)}</button></div>`;
+  const o=$('#other');if(o)o.onclick=()=>{$('#ph').value=pick(G.cat)};
   let b;const cv=recorderUI(x=>{b=x;$('#after').style.display='block'});
   $('#pn').onclick=()=>play(b,cv);$('#pr').onclick=()=>play(reverse(b),cv);
-  $('#ok').onclick=()=>{$('#ok').disabled=true;send({t:'audio',kind:'orig',data:toPCM(b),rate:b.sampleRate});if(!H)waitScreen('📤','Enviado. Ahora imita '+esc(G.imi)+'…')};
+  $('#ok').onclick=()=>{const p=readPhrase();if(!p)return;$('#ok').disabled=true;send({t:'audio',kind:'orig',data:toPCM(b),rate:b.sampleRate,phrase:p});if(!H)waitScreen('📤','Enviado. Ahora imita '+esc(G.imi)+'…')};
   return}
  if(G.phase==='imitate'){
   if(!isImi)return waitScreen('🎭',esc(G.imi)+' está imitando el sonido…');
@@ -285,7 +333,7 @@ function renderOnline(){
   const ri=reverse(N.A.imit),mine=G.guesses.find(g=>g.name===me);
   const list=G.guesses.length?G.guesses.map(g=>`<div><b>${esc(g.name)}:</b> ${esc(g.text)}</div>`).join(''):'<p class="hint">Aún no hay respuestas…</p>';
   app.innerHTML=`${th}<h1>🔊 Momento de la verdad</h1><p class="hint">La imitación de ${esc(G.imi)}, <b>dada la vuelta</b>.</p><canvas id="wave"></canvas><button class="btn primary" id="p1">🔁 Reproducir</button>
-  ${isRec?`<div class="card"><div class="phrase">${esc(G.phrase)}</div><p class="hint">Tu frase (si dijiste otra, tú decides). Marca quién acertó:</p><div class="guess">${G.guesses.map(g=>`<label><input type="checkbox" value="${esc(g.name)}"><span>${esc(g.name)} <small>«${esc(g.text)}»</small></span></label>`).join('')||'<p class="hint">Esperando respuestas…</p>'}</div><button class="btn alt" id="mark">Puntuar ▶</button></div>`
+  ${isRec?`<div class="card"><div class="phrase">${esc(G.phrase)}</div><p class="hint">Tu frase. Marca quién acertó:</p><div class="guess">${G.guesses.map(g=>`<label><input type="checkbox" value="${esc(g.name)}"><span>${esc(g.name)} <small>«${esc(g.text)}»</small></span></label>`).join('')||'<p class="hint">Esperando respuestas…</p>'}</div><button class="btn alt" id="mark">Puntuar ▶</button></div>`
    :isImi&&G.players.length>2?`<div class="card"><h2>Respuestas</h2>${list}</div><p class="hint">Tú no adivinas, ¡ya has hecho bastante! 😄</p>`
    :`<div class="card"><h2>¿Qué frase era?</h2>${mine?`<p>Tu respuesta: <b>${esc(mine.text)}</b></p>`:`<form class="add" id="gf"><input id="gt" placeholder="Escribe tu respuesta" maxlength="60" autocomplete="off"><button class="btn primary" style="width:auto;margin:0">➤</button></form>`}${list}</div>`}`;
   const cv=$('#wave');drawWave(cv,ri);$('#p1').onclick=()=>play(ri,cv);
@@ -302,8 +350,11 @@ function renderOnline(){
   animateBars();bindBack();if(H)$('#again').onclick=()=>send({t:'again'})}
 }
 
+/* ---------- arranque ---------- */
 setTheme(THEMES[localStorage.getItem('theme')]?localStorage.getItem('theme'):'halloween');
-home();
+const salaURL=(new URLSearchParams(location.search).get('sala')||'').toUpperCase().slice(0,4);
+const room=JSON.parse(sessionStorage.getItem('room')||'null');
+if(room)joinRoom(room.me,room.c,1);else if(salaURL.length===4)onlineHome(salaURL);else home();
 </script>
 </body>
 </html>
