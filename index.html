@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Rebobina</title>
+<meta name="description" content="Graba una frase, dale la vuelta, imítala y adivina. Juego de fiesta gratis, sin instalar nada.">
+<style>
+:root{--bg:#140a1e;--bg2:#3a1a0a;--fg:#fff;--muted:#c9bfd6;--accent:#ff7a00;--accent2:#9dff3a;--card:rgba(255,255,255,.08);--line:rgba(255,255,255,.18);--font:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;--r:22px}
+[data-theme=halloween]{--bg:#140a1e;--bg2:#3a1a0a;--accent:#ff7a00;--accent2:#9dff3a}
+[data-theme=navidad]{--bg:#06281a;--bg2:#3a0b12;--accent:#ff3b4e;--accent2:#ffe9a8}
+[data-theme=neon]{--bg:#05000f;--bg2:#24003d;--accent:#ff00e6;--accent2:#00f5ff}
+[data-theme=arcade]{--bg:#000;--bg2:#15155a;--accent:#ffd400;--accent2:#ff3366;--font:"Courier New",monospace}
+[data-theme=oceano]{--bg:#021f3a;--bg2:#036f8a;--accent:#00d4ff;--accent2:#ffcf5c}
+[data-theme=espacio]{--bg:#000012;--bg2:#2a0b4f;--accent:#b388ff;--accent2:#ffe082}
+[data-theme=bosque]{--bg:#0d2a12;--bg2:#3d5a1f;--accent:#ff9f43;--accent2:#c9f29b}
+[data-theme=kawaii]{--bg:#ffd6e8;--bg2:#d8e7ff;--fg:#4a2b4a;--muted:#8a6a8a;--accent:#ff6fae;--accent2:#5fb4ff;--card:rgba(255,255,255,.6);--line:rgba(0,0,0,.1)}
+[data-theme=playa]{--bg:#ffb347;--bg2:#00b4d8;--fg:#1f2a44;--muted:#3b4a6b;--accent:#ff5e5b;--accent2:#fff176;--card:rgba(255,255,255,.45);--line:rgba(0,0,0,.12)}
+[data-theme=fiesta]{--bg:#2b004f;--bg2:#ff2e63;--accent:#ffd700;--accent2:#08d9d6}
+[data-theme=pirata]{--bg:#141414;--bg2:#5a3814;--accent:#d4a84b;--accent2:#e74c3c}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%}
+body{font-family:var(--font);color:var(--fg);background:linear-gradient(160deg,var(--bg),var(--bg2)) fixed;transition:background .6s,color .6s}
+#bg{position:fixed;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+#bg span{position:absolute;bottom:-60px;opacity:.5;animation:float linear infinite;filter:drop-shadow(0 0 8px rgba(0,0,0,.3))}
+@keyframes float{to{transform:translateY(-120vh) rotate(360deg)}}
+#app{position:relative;z-index:1;max-width:560px;margin:0 auto;padding:20px 16px 48px}
+h1,h2,h3{margin:0 0 8px;line-height:1.1}
+h1{font-size:2.4rem}
+.logo{font-size:3rem;text-align:center;text-shadow:0 4px 24px var(--accent)}
+.tag{text-align:center;color:var(--muted);margin:0 0 20px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:16px;margin:12px 0;backdrop-filter:blur(8px)}
+.card h2{font-size:1.1rem;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.btn{display:block;width:100%;border:0;border-radius:999px;padding:16px 20px;font:inherit;font-size:1.15rem;font-weight:700;cursor:pointer;background:var(--card);color:var(--fg);border:1px solid var(--line);margin:8px 0;transition:transform .1s}
+.btn:active{transform:scale(.97)}
+.btn.primary{background:var(--accent);color:#000;border:0;box-shadow:0 8px 30px -6px var(--accent)}
+.btn.alt{background:var(--accent2);color:#000;border:0}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+.row{display:flex;gap:8px}.row .btn{flex:1}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(88px,1fr));gap:8px}
+.theme{border:3px solid transparent;border-radius:16px;padding:10px 4px;background:linear-gradient(160deg,var(--bg),var(--bg2));color:var(--fg);font:inherit;font-size:.8rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px}
+.theme span{font-size:1.8rem}
+.theme.on{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent2)}
+.players{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:10px}
+.chip{background:var(--accent);color:#000;border-radius:999px;padding:6px 12px;font-weight:700;display:flex;gap:6px;align-items:center}
+.chip b{cursor:pointer;opacity:.6}
+form.add{display:flex;gap:8px}
+input,select{font:inherit;font-size:1rem;padding:12px 14px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.12);color:var(--fg);flex:1;min-width:0}
+input::placeholder{color:var(--muted)}
+select{background:var(--card)}
+select option{color:#000}
+.center{text-align:center;padding-top:8vh}
+.big{font-size:5rem;margin:0}
+.phrase{font-size:1.5rem;font-weight:800;text-align:center;padding:14px;border-radius:16px;background:rgba(0,0,0,.25);border:2px dashed var(--accent2)}
+canvas{width:100%;height:110px;display:block;border-radius:16px;background:rgba(0,0,0,.2)}
+.rec{width:110px;height:110px;border-radius:50%;margin:14px auto;display:grid;place-items:center;font-size:2.6rem;border:6px solid var(--accent2);background:var(--accent);cursor:pointer;transition:all .2s;box-shadow:0 0 0 0 var(--accent)}
+.rec.on{animation:pulse 1s infinite;background:#e3002b;border-color:#fff}
+@keyframes pulse{0%{box-shadow:0 0 0 0 rgba(227,0,43,.7)}100%{box-shadow:0 0 0 26px rgba(227,0,43,0)}}
+.hint{color:var(--muted);text-align:center;font-size:.95rem}
+.top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-weight:700;margin-bottom:8px}
+.score{display:flex;align-items:center;gap:10px;margin:8px 0}
+.score .name{width:34%;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.score .bar{flex:1;height:24px;background:rgba(0,0,0,.25);border-radius:999px;overflow:hidden}
+.score .bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:999px;transition:width .8s}
+.score .pts{width:40px;text-align:right;font-weight:800}
+.guess{display:flex;flex-wrap:wrap;gap:8px}
+.guess label{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:10px 16px;font-weight:700;cursor:pointer;user-select:none}
+.guess input{display:none}
+.guess label:has(input:checked){background:var(--accent2);border-color:var(--accent2);color:#000}
+.link{background:none;border:0;color:var(--muted);text-decoration:underline;cursor:pointer;font:inherit;display:block;margin:8px auto}
+.err{background:#e3002b;color:#fff;padding:12px;border-radius:12px;display:block}
+#confetti span{position:fixed;top:-40px;animation:fall 3s linear forwards;z-index:5;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(720deg)}}
+footer{text-align:center;color:var(--muted);font-size:.8rem;margin-top:20px}
+</style>
+</head>
+<body>
+<div id="bg"></div>
+<div id="confetti"></div>
+<main id="app"></main>
+<script>
+const THEMES={
+ halloween:{n:'Halloween',e:['🎃','👻','🦇','🕸️','🍬']},
+ navidad:{n:'Navidad',e:['🎄','❄️','🎁','⛄','🔔']},
+ neon:{n:'Neón',e:['⚡','💜','🌃','🔮','💫']},
+ arcade:{n:'Arcade',e:['👾','🕹️','🎮','🍄','⭐']},
+ oceano:{n:'Océano',e:['🐙','🌊','🐚','🐠','🦀']},
+ espacio:{n:'Espacio',e:['🚀','🪐','⭐','👽','🌙']},
+ bosque:{n:'Bosque',e:['🌲','🍄','🦊','🦉','🍂']},
+ kawaii:{n:'Kawaii',e:['🍭','🌸','🧸','🍓','💖']},
+ playa:{n:'Playa',e:['🏖️','🍍','☀️','🌴','🍹']},
+ fiesta:{n:'Fiesta',e:['🎉','🎊','🪩','🎈','🥳']},
+ pirata:{n:'Pirata',e:['🏴‍☠️','⚓','🦜','💰','🗺️']}
+};
+const PHRASES=['Me gusta el chocolate','Hoy llueve en Madrid','El perro salta la valla','Tengo hambre de pizza','Hasta la vista, baby','Que la fuerza te acompañe','Mi abuela baila salsa','El gato duerme en el sofá','Vamos a la playa','No me gustan los lunes','La vida es bella','Dame un abrazo','Pásame la sal','El sol brilla mucho','Quiero un helado de fresa','Mañana es fiesta','Esto es una locura','Feliz cumpleaños','Buenas noches a todos','Tengo frío en los pies','Apaga la luz','El tren llega tarde','Me duele la cabeza','Cántame una canción','Dónde está mi móvil','Hoy cocino yo','Abre la ventana','Es hora de dormir','Vamos al cine','Qué calor hace','Me encanta este juego','Pon música fuerte','Hola, qué tal','Un café con leche','La pelota es roja','Corre que nos vamos','Tengo sueño','Mira qué bonito','Nos vemos luego','Sube el volumen'];
+const MAX=10,MIN=3;
+const $=s=>document.querySelector(s),app=$('#app');
+const esc=s=>s.replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const rand=a=>a[Math.floor(Math.random()*a.length)];
+let S={players:JSON.parse(localStorage.getItem('players')||'[]'),vueltas:1,turn:0,total:0,scores:{},orig:null,imit:null,phrase:''};
+
+/* ---------- tema ---------- */
+function setTheme(t){document.body.dataset.theme=t;localStorage.setItem('theme',t);const bg=$('#bg');bg.innerHTML='';const e=THEMES[t].e;for(let i=0;i<16;i++){const s=document.createElement('span');s.textContent=e[i%e.length];s.style.left=Math.random()*100+'%';s.style.animationDelay=-Math.random()*16+'s';s.style.animationDuration=12+Math.random()*10+'s';s.style.fontSize=18+Math.random()*30+'px';bg.appendChild(s)}}
+function confetti(){const e=THEMES[document.body.dataset.theme].e,c=$('#confetti');c.innerHTML='';for(let i=0;i<70;i++){const s=document.createElement('span');s.textContent=rand(e);s.style.left=Math.random()*100+'%';s.style.animationDelay=Math.random()*1.5+'s';s.style.fontSize=16+Math.random()*24+'px';c.appendChild(s)}setTimeout(()=>c.innerHTML='',5000)}
+
+/* ---------- audio ---------- */
+let AC,playing=null,rec=null;
+function ac(){if(!AC)AC=new(window.AudioContext||window.webkitAudioContext)();if(AC.state==='suspended')AC.resume();return AC}
+function reverse(b){const o=ac().createBuffer(b.numberOfChannels,b.length,b.sampleRate);for(let c=0;c<b.numberOfChannels;c++)o.copyToChannel(Float32Array.from(b.getChannelData(c)).reverse(),c);return o}
+function bars(cv){const c=cv.getContext('2d'),W=cv.width=cv.clientWidth*devicePixelRatio,H=cv.height=cv.clientHeight*devicePixelRatio;c.clearRect(0,0,W,H);const cs=getComputedStyle(document.body);return{c,W,H,a1:cs.getPropertyValue('--accent'),a2:cs.getPropertyValue('--accent2'),bar(x,w,h,col){c.fillStyle=col;c.beginPath();c.roundRect?c.roundRect(x,(H-h)/2,w,h,99):c.rect(x,(H-h)/2,w,h);c.fill()}}}
+function drawWave(cv,buf,p=0){const g=bars(cv),d=buf.getChannelData(0),N=60,step=Math.floor(d.length/N),bw=g.W/N;for(let i=0;i<N;i++){let m=0;for(let j=0;j<step;j+=8){const v=Math.abs(d[i*step+j]);if(v>m)m=v}g.bar(i*bw+bw*.15,bw*.7,Math.max(4,Math.min(g.H,m*g.H*1.8)),i/N<p?g.a2:g.a1)}}
+function drawLive(cv,data){const g=bars(cv),N=60,step=Math.floor(data.length/N),bw=g.W/N;for(let i=0;i<N;i++){let m=0;for(let j=0;j<step;j++){const v=Math.abs(data[i*step+j]-128)/128;if(v>m)m=v}g.bar(i*bw+bw*.15,bw*.7,Math.max(4,m*g.H*2),'#fff')}}
+async function startRec(cv){const stream=await navigator.mediaDevices.getUserMedia({audio:true});const ctx=ac(),mr=new MediaRecorder(stream),chunks=[];mr.ondataavailable=e=>chunks.push(e.data);const src=ctx.createMediaStreamSource(stream),an=ctx.createAnalyser();an.fftSize=512;src.connect(an);const data=new Uint8Array(an.fftSize);let raf;const draw=()=>{an.getByteTimeDomainData(data);drawLive(cv,data);raf=requestAnimationFrame(draw)};draw();mr.start();
+ rec={stop:()=>new Promise((res,rej)=>{mr.onstop=async()=>{cancelAnimationFrame(raf);stream.getTracks().forEach(t=>t.stop());src.disconnect();try{res(await ctx.decodeAudioData(await new Blob(chunks,{type:mr.mimeType}).arrayBuffer()))}catch(e){rej(e)}};mr.stop()})}}
+function play(buf,cv){return new Promise(res=>{const ctx=ac();if(playing){try{playing.stop()}catch(e){}}const s=ctx.createBufferSource();s.buffer=buf;s.connect(ctx.destination);const t0=ctx.currentTime;playing=s;let raf;const tick=()=>{drawWave(cv,buf,(ctx.currentTime-t0)/buf.duration);raf=requestAnimationFrame(tick)};tick();s.onended=()=>{cancelAnimationFrame(raf);drawWave(cv,buf,1);if(playing===s)playing=null;res()};s.start()})}
+
+/* ---------- pantallas ---------- */
+function home(){
+ const t=document.body.dataset.theme;
+ app.innerHTML=`<h1 class="logo">⏪ Rebobina</h1><p class="tag">Graba. Dale la vuelta. Imita. Adivina.</p>
+ <section class="card"><h2>🎨 Skin</h2><div class="themes">${Object.entries(THEMES).map(([k,v])=>`<button class="theme ${k===t?'on':''}" data-theme="${k}" data-t="${k}"><span>${v.e[0]}</span>${v.n}</button>`).join('')}</div></section>
+ <section class="card"><h2>👥 Jugadores (${S.players.length}/${MAX})</h2><div class="players" id="plist"></div><form class="add" id="padd"><input id="pname" placeholder="Nombre" maxlength="14" autocomplete="off"><button class="btn primary" style="width:auto;margin:0;padding:12px 18px">＋</button></form><p class="hint">Mínimo ${MIN} jugadores, máximo ${MAX}. Se juega pasando el móvil.</p></section>
+ <section class="card"><h2>🔁 Vueltas</h2><select id="vueltas">${[1,2,3].map(n=>`<option value="${n}" ${n===S.vueltas?'selected':''}>${n} vuelta${n>1?'s':''} (cada uno graba ${n} vez${n>1?'es':''})</option>`).join('')}</select></section>
+ <button class="btn primary" id="start">Jugar ▶</button>
+ <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol></details>
+ <footer>Gratis y sin servidor · todo pasa en tu móvil</footer>`;
+ document.querySelectorAll('.theme').forEach(b=>b.onclick=()=>{setTheme(b.dataset.t);home()});
+ const list=$('#plist');const draw=()=>{list.innerHTML=S.players.map((p,i)=>`<span class="chip">${esc(p)}<b data-i="${i}">✕</b></span>`).join('')||'<span class="hint">Añade jugadores…</span>';list.querySelectorAll('b').forEach(b=>b.onclick=()=>{S.players.splice(+b.dataset.i,1);save();home()});$('#start').disabled=S.players.length<MIN;$('#padd').style.display=S.players.length>=MAX?'none':'flex'};draw();
+ $('#padd').onsubmit=e=>{e.preventDefault();const v=$('#pname').value.trim();if(!v||S.players.length>=MAX)return;if(S.players.some(p=>p.toLowerCase()===v.toLowerCase())){$('#pname').value='';return}S.players.push(v);$('#pname').value='';save();draw()};
+ $('#vueltas').onchange=e=>S.vueltas=+e.target.value;
+ $('#start').onclick=startGame;
+}
+const save=()=>localStorage.setItem('players',JSON.stringify(S.players));
+
+function startGame(){S.turn=0;S.total=S.vueltas*S.players.length;S.scores=Object.fromEntries(S.players.map(p=>[p,0]));nextTurn()}
+function nextTurn(){if(S.turn>=S.total)return final();const n=S.players.length;S.rec=S.players[S.turn%n];S.imi=S.players[(S.turn+1)%n];S.orig=S.imit=null;S.phrase=rand(PHRASES);pass(S.rec,'🎙️ Te toca grabar la frase secreta. ¡Que nadie te oiga!',screenRecord)}
+function pass(name,msg,next){app.innerHTML=`<div class="center"><p class="big">📱</p><h2>Pasa el móvil a</h2><h1>${esc(name)}</h1><p class="hint">${msg}</p><button class="btn primary" id="go">Soy ${esc(name)} ✋</button></div>`;$('#go').onclick=next}
+const top=()=>`<div class="top"><span>Turno ${S.turn+1}/${S.total}</span><span>🎙️ ${esc(S.rec)} · 🎭 ${esc(S.imi)}</span></div>`;
+
+function recorderUI(done){
+ const cv=$('#wave'),btn=$('#rec'),st=$('#status');
+ btn.onclick=async()=>{try{if(!rec){await startRec(cv);btn.classList.add('on');btn.textContent='⏹';st.textContent='Grabando… toca para parar'}else{const buf=await rec.stop();rec=null;btn.classList.remove('on');btn.textContent='🎙️';if(buf.duration<.4){st.textContent='Muy corto, prueba otra vez';return}drawWave(cv,buf);st.textContent=buf.duration.toFixed(1)+' s grabados';done(buf)}}catch(e){rec=null;btn.classList.remove('on');st.innerHTML=`<span class="err">No puedo usar el micrófono. Permite el acceso y abre la página por HTTPS. (${esc(String(e.message||e))})</span>`}};
+ return cv;
+}
+
+function screenRecord(){
+ app.innerHTML=`${top()}<h1>🎙️ Graba tu frase</h1>
+ <div class="card"><div class="phrase" id="ph">${esc(S.phrase)}</div><p class="hint"><button class="link" id="other">🔀 Otra frase</button> o invéntate una</p></div>
+ <canvas id="wave"></canvas><div class="rec" id="rec">🎙️</div><p class="hint" id="status">Toca para grabar (2-4 segundos va bien)</p>
+ <div id="after" style="display:none"><div class="row"><button class="btn" id="pn">▶ Normal</button><button class="btn" id="pr">⏪ Al revés</button></div><button class="btn primary" id="ok">✅ Listo, pasar a ${esc(S.imi)}</button></div>`;
+ $('#other').onclick=()=>{S.phrase=rand(PHRASES);$('#ph').textContent=S.phrase};
+ const cv=recorderUI(b=>{S.orig=b;$('#after').style.display='block'});
+ $('#pn').onclick=()=>play(S.orig,cv);$('#pr').onclick=()=>play(reverse(S.orig),cv);
+ $('#ok').onclick=()=>pass(S.imi,'🎭 Escucha la frase al revés e imítala lo mejor que puedas.',screenImitate);
+}
+function screenImitate(){
+ const rev=reverse(S.orig);
+ app.innerHTML=`${top()}<h1>🎭 Imita el sonido</h1><p class="hint">Escúchalo las veces que quieras. Luego grábate repitiéndolo <b>tal cual suena</b>.</p>
+ <canvas id="wave"></canvas><button class="btn alt" id="listen">🔊 Escuchar al revés</button>
+ <div class="rec" id="rec">🎙️</div><p class="hint" id="status">Toca para grabar tu imitación</p>
+ <div id="after" style="display:none"><button class="btn" id="pn">▶ Oír mi imitación</button><button class="btn primary" id="ok">✅ Listo, ¡a revelar!</button></div>`;
+ const cv=recorderUI(b=>{S.imit=b;$('#after').style.display='block'});
+ $('#listen').onclick=()=>play(rev,cv);$('#pn').onclick=()=>play(S.imit,cv);
+ $('#ok').onclick=()=>pass('todos','🔊 Reunid a todo el grupo para el momento de la verdad.',screenReveal);
+}
+function screenReveal(){
+ const others=S.players.filter(p=>p!==S.rec&&p!==S.imi);
+ app.innerHTML=`${top()}<h1>🔊 Momento de la verdad</h1><p class="hint">Esto es la imitación de ${esc(S.imi)}… <b>dada la vuelta</b>. ¿Qué frase dijo ${esc(S.rec)}?</p>
+ <canvas id="wave"></canvas><button class="btn primary" id="p1">🔁 Reproducir</button>
+ <div class="card"><h2>¿Quién lo ha adivinado?</h2><div class="guess">${others.map(p=>`<label><input type="checkbox" value="${esc(p)}"><span>${esc(p)}</span></label>`).join('')}</div></div>
+ <button class="btn" id="show">👀 Revelar frase original</button><div id="orig" style="display:none" class="card"><div class="phrase">${esc(S.phrase)}</div><p class="hint">(si ${esc(S.rec)} dijo otra cosa, que lo cuente)</p><button class="btn" id="p2">▶ Oír original</button></div>
+ <button class="btn alt" id="next">Puntuar y seguir ▶</button>`;
+ const cv=$('#wave'),ri=reverse(S.imit);drawWave(cv,ri);
+ $('#p1').onclick=()=>play(ri,cv);$('#show').onclick=()=>{$('#orig').style.display='block';$('#show').style.display='none'};$('#p2').onclick=()=>play(S.orig,cv);
+ $('#next').onclick=()=>{const g=[...document.querySelectorAll('.guess input:checked')].map(i=>i.value);g.forEach(p=>S.scores[p]++);if(g.length){S.scores[S.imi]+=2;S.scores[S.rec]+=1}S.turn++;scoreboard(g.length)};
+}
+function scoreTable(){const max=Math.max(1,...Object.values(S.scores));return Object.entries(S.scores).sort((a,b)=>b[1]-a[1]).map(([p,s],i)=>`<div class="score"><span class="name">${['🥇','🥈','🥉'][i]||'▪️'} ${esc(p)}</span><div class="bar"><i style="width:0" data-w="${s/max*100}"></i></div><span class="pts">${s}</span></div>`).join('')}
+function animateBars(){requestAnimationFrame(()=>document.querySelectorAll('.bar i').forEach(i=>i.style.width=i.dataset.w+'%'))}
+function scoreboard(hits){
+ if(hits)confetti();
+ app.innerHTML=`<h1>📊 Marcador</h1><p class="hint">${hits?`¡${hits} acierto${hits>1?'s':''}! 🎉`:'Nadie lo pilló… 😅'}</p><div class="card">${scoreTable()}</div><button class="btn primary" id="go">${S.turn>=S.total?'🏆 Ver resultado final':'Siguiente turno ▶'}</button><button class="link" id="quit">Terminar partida</button>`;
+ animateBars();$('#go').onclick=nextTurn;$('#quit').onclick=final;
+}
+function final(){
+ confetti();const [w]=Object.entries(S.scores).sort((a,b)=>b[1]-a[1]);
+ app.innerHTML=`<div class="center"><p class="big">🏆</p><h2>Gana</h2><h1>${esc(w[0])}</h1></div><div class="card">${scoreTable()}</div><button class="btn primary" id="again">🔁 Otra partida</button><button class="btn" id="home">🏠 Inicio</button>`;
+ animateBars();$('#again').onclick=startGame;$('#home').onclick=home;
+}
+
+setTheme(THEMES[localStorage.getItem('theme')]?localStorage.getItem('theme'):'halloween');
+home();
+</script>
+</body>
+</html>
