@@ -319,7 +319,7 @@ function home(){
  <button class="btn primary mode" id="local"><span class="ic">📱</span><span><b>Un solo móvil</b><small>Todos juntos en la misma sala. El móvil va pasando de mano en mano: uno graba, otro imita, el resto adivina. De 2 a 10 jugadores.</small></span><span class="ch">›</span></button>
  <button class="btn alt mode" id="online"><span class="ic">📲</span><span><b>Cada uno con su móvil</b><small>Juntos o a distancia. Uno crea la sala y los demás entran con el enlace o el código. De 2 a 10 jugadores.</small></span><span class="ch">›</span></button>
  ${roomsUI()}${skinBtn()}
- <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Su imitación se vuelve a invertir… ¡y suena casi como la frase original!</li><li>El resto adivina. Puntos: adivinar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un solo móvil:</b> os lo vais pasando. <b>Cada uno con su móvil:</b> uno crea la sala y los demás entran con el enlace o el código, estén donde estén.</p></details>
+ <details class="card"><summary><b>❓ Cómo se juega</b></summary><ol><li>Un jugador graba en secreto una frase.</li><li>Otro jugador la escucha <b>al revés</b> y la imita.</li><li>Se escucha a sí mismo <b>al revés</b>… ¡y suena casi como la frase original! Lo que entienda es su respuesta.</li><li>El resto también puede adivinar. Puntos: acertar +1, imitador +2 si alguien acierta, grabador +1.</li></ol><p class="hint"><b>Un solo móvil:</b> os lo vais pasando. <b>Cada uno con su móvil:</b> uno crea la sala y los demás entran con el enlace o el código, estén donde estén.</p></details>
  <button class="btn" id="hist" ${LS.get('hist',[]).length?'':'style="display:none"'}>📜 Historial de partidas</button>
  <button class="btn" id="install" style="display:none">📲 Instalar la app</button><p class="hint" id="ios" style="display:none">📲 Para instalarla en iPhone: botón <b>Compartir</b> → <b>Añadir a pantalla de inicio</b>.</p>
  <footer>Gratis y sin servidor · de 2 a 10 jugadores</footer>`;
@@ -364,17 +364,17 @@ function screenRecord(){
 }
 function screenImitate(){
  const rev=reverse(S.orig);
- app.innerHTML=`${hdr(S.turn,S.total,S.rec,S.imi)}<h1>🎭 Imita el sonido</h1><p class="hint">Escúchalo las veces que quieras. Luego grábate repitiéndolo <b>tal cual suena</b>.</p>
+ app.innerHTML=`${hdr(S.turn,S.total,S.rec,S.imi)}<h1>🎭 Imita el sonido</h1><p class="hint">Escúchalo las veces que quieras y grábate repitiéndolo <b>tal cual suena</b>. Después oye tu imitación <b>al revés</b>: lo que entiendas es tu respuesta.</p>
  <canvas id="wave"></canvas><button class="btn alt" id="listen">🔊 Escuchar al revés</button>
  <div class="rec" id="rec">🎙️</div><p class="hint" id="status">Toca para grabar tu imitación</p>
- <div id="after" style="display:none"><button class="btn" id="pn">▶ Oír mi imitación</button><button class="btn primary" id="ok">✅ Listo, ¡a revelar!</button></div>`;
+ <div id="after" style="display:none"><button class="btn alt" id="prr">⏪ Oír mi imitación al revés</button><div class="row"><button class="btn" id="pn">▶ Normal</button><button class="btn" id="re">🎙️ Repetir</button></div><button class="btn primary" id="ok">✅ Listo, ¡a revelar!</button></div>`;
  const cv=recorderUI(b=>{S.imit=b;$('#after').style.display='block'});
- $('#listen').onclick=()=>play(rev,cv);$('#pn').onclick=()=>play(S.imit,cv);
+ $('#listen').onclick=()=>play(rev,cv);$('#pn').onclick=()=>play(S.imit,cv);$('#prr').onclick=()=>play(reverse(S.imit),cv);$('#re').onclick=()=>$('#rec').click();
  $('#ok').onclick=()=>pass('todos','🔊 Reunid a todo el grupo para el momento de la verdad.',screenReveal);
 }
 function screenReveal(){
- const others=S.players.length===2?[S.imi]:S.players.filter(p=>p!==S.rec&&p!==S.imi);
- app.innerHTML=`${hdr(S.turn,S.total,S.rec,S.imi)}<h1>🔊 Momento de la verdad</h1><p class="hint">Esto es la imitación de ${esc(S.imi)}… <b>dada la vuelta</b>. ¿Qué frase dijo ${esc(S.rec)}?</p>
+ const others=S.players.filter(p=>p!==S.rec); // quien imita también adivina
+ app.innerHTML=`${hdr(S.turn,S.total,S.rec,S.imi)}<h1>🔊 Momento de la verdad</h1><p class="hint">Esto es la imitación de ${esc(S.imi)}… <b>dada la vuelta</b>. ${esc(S.imi)} dice primero su respuesta y luego el resto. ¿Qué frase dijo ${esc(S.rec)}?</p>
  <canvas id="wave"></canvas><button class="btn primary" id="p1">🔁 Reproducir</button>
  <div class="card"><h2>¿Quién lo ha adivinado?</h2><div class="guess">${others.map(p=>`<label><input type="checkbox" value="${esc(p)}"><span>${esc(p)}</span></label>`).join('')}</div></div>
  <button class="btn" id="show">👀 Revelar frase original</button><div id="orig" style="display:none" class="card"><div class="phrase">${esc(S.phrase)}</div><button class="btn" id="p2">▶ Oír original</button></div>
@@ -508,19 +508,18 @@ function renderOnline(){
   if(!isImi)return waitScreen('🎭',esc(G.imi)+' está imitando el sonido…');
   if(!N.A.orig)return waitScreen('📥','Recibiendo el audio…');
   const rev=reverse(N.A.orig);
-  app.innerHTML=`${th}<h1>🎭 Imita el sonido</h1><p class="hint">Escúchalo las veces que quieras y grábate repitiéndolo <b>tal cual suena</b>.</p><canvas id="wave"></canvas><button class="btn alt" id="listen">🔊 Escuchar al revés</button><div class="rec" id="rec">🎙️</div><p class="hint" id="status">Toca para grabar tu imitación</p>
-  <div id="after" style="display:none"><button class="btn" id="pn">▶ Oír mi imitación</button><button class="btn primary" id="ok">✅ Enviar a todos</button></div>`;
+  app.innerHTML=`${th}<h1>🎭 Imita el sonido</h1><p class="hint">Escúchalo las veces que quieras y grábate repitiéndolo <b>tal cual suena</b>. Después oye tu imitación <b>al revés</b>: lo que entiendas es tu respuesta.</p><canvas id="wave"></canvas><button class="btn alt" id="listen">🔊 Escuchar al revés</button><div class="rec" id="rec">🎙️</div><p class="hint" id="status">Toca para grabar tu imitación</p>
+  <div id="after" style="display:none"><button class="btn alt" id="prr">⏪ Oír mi imitación al revés</button><div class="row"><button class="btn" id="pn">▶ Normal</button><button class="btn" id="re">🎙️ Repetir</button></div><button class="btn primary" id="ok">✅ Enviar a todos</button></div>`;
   let b;const cv=recorderUI(x=>{b=x;$('#after').style.display='block'});
-  $('#listen').onclick=()=>play(rev,cv);$('#pn').onclick=()=>play(b,cv);
+  $('#listen').onclick=()=>play(rev,cv);$('#pn').onclick=()=>play(b,cv);$('#prr').onclick=()=>play(reverse(b),cv);$('#re').onclick=()=>$('#rec').click();
   $('#ok').onclick=()=>{$('#ok').disabled=true;send({t:'audio',kind:'imit',data:toPCM(b),rate:b.sampleRate});if(!H)waitScreen('📤','Enviado…')};
   return}
  if(G.phase==='reveal'){
   if(!N.A.imit)return waitScreen('📥','Recibiendo la imitación…');
   const ri=reverse(N.A.imit),mine=G.guesses.find(g=>g.name===me);
   const list=G.guesses.length?G.guesses.map(g=>`<div><b>${esc(g.name)}:</b> ${esc(g.text)}</div>`).join(''):'<p class="hint">Aún no hay respuestas…</p>';
-  app.innerHTML=`${th}<h1>🔊 Momento de la verdad</h1><p class="hint">La imitación de ${esc(G.imi)}, <b>dada la vuelta</b>.</p><canvas id="wave"></canvas><button class="btn primary" id="p1">🔁 Reproducir</button>
+  app.innerHTML=`${th}<h1>🔊 Momento de la verdad</h1><p class="hint">La imitación de ${esc(G.imi)}, <b>dada la vuelta</b>. ${isImi?'Escribe lo que entiendes: es tu respuesta.':'¿Qué frase dijo '+esc(G.rec)+'?'}</p><canvas id="wave"></canvas><button class="btn primary" id="p1">🔁 Reproducir</button>
   ${isRec?`<div class="card"><div class="phrase">${esc(G.phrase)}</div><p class="hint">Tu frase. Marca quién acertó:</p><div class="guess">${G.guesses.map(g=>`<label><input type="checkbox" value="${esc(g.name)}"><span>${esc(g.name)} <small>«${esc(g.text)}»</small></span></label>`).join('')||'<p class="hint">Esperando respuestas…</p>'}</div><button class="btn alt" id="mark">Puntuar ▶</button></div>`
-   :isImi&&G.players.length>2?`<div class="card"><h2>Respuestas</h2>${list}</div><p class="hint">Tú no adivinas, ¡ya has hecho bastante! 😄</p>`
    :`<div class="card"><h2>¿Qué frase era?</h2>${mine?`<p>Tu respuesta: <b>${esc(mine.text)}</b></p>`:`<form class="add" id="gf"><input id="gt" placeholder="Escribe tu respuesta" maxlength="60" autocomplete="off"><button class="btn primary" style="width:auto;margin:0">➤</button></form>`}${list}</div>`}`;
   const cv=$('#wave');drawWave(cv,ri);$('#p1').onclick=()=>play(ri,cv);
   const gf=$('#gf');if(gf)gf.onsubmit=e=>{e.preventDefault();const t=$('#gt').value.trim();if(t)send({t:'guess',text:t})};
